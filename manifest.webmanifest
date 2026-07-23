@@ -1,0 +1,11 @@
+{
+  "name": "SEP - Controle de Certificações",
+  "short_name": "SEP Controle",
+  "description": "Controle interno de checklists, auditorias, pendências e certificações por filial.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6fa",
+  "theme_color": "#0b1736",
+  "lang": "pt-BR"
+}
