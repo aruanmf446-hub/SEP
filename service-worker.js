@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sep-controle-v4';
+const CACHE_NAME = 'sep-controle-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,12 @@ const ASSETS = [
   './app-v4.css',
   './app.js',
   './app-v4.js',
+  './gemba.html',
+  './gemba.css',
+  './gemba-core.js',
+  './gemba-admin.js',
+  './gemba-inspector.js',
+  './gemba-init.js',
   './manifest.webmanifest'
 ];
 
