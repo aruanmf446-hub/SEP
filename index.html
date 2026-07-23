@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1736">
+  <meta name="description" content="Controle interno de checklists, auditorias, pendências e certificações por filial.">
+  <title>SEP | Controle de Certificações</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">S</div>
+        <div>
+          <strong>SEP</strong>
+          <span>Controle de certificações</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Navegação principal">
+        <button class="nav-item active" data-view="dashboard"><span class="nav-icon">01</span>Dashboard</button>
+        <button class="nav-item" data-view="activities"><span class="nav-icon">02</span>Rotinas e checklists</button>
+        <button class="nav-item" data-view="branches"><span class="nav-icon">03</span>Filiais</button>
+        <button class="nav-item" data-view="people"><span class="nav-icon">04</span>Responsáveis</button>
+        <button class="nav-item" data-view="data"><span class="nav-icon">05</span>Dados e backup</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="storage-dot"></span>
+        <div>
+          <strong>Armazenamento local</strong>
+          <small>Dados salvos neste navegador</small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button>
+        <div>
+          <p class="eyebrow" id="pageEyebrow">Visão geral</p>
+          <h1 id="pageTitle">Dashboard de andamento</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="button secondary" id="printDashboardButton">Imprimir dashboard</button>
+          <button class="button primary" id="newActivityButton">+ Novo controle</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="dashboard-toolbar panel">
+          <div class="field compact">
+            <label for="dashboardRoutineFilter">Rotina</label>
+            <select id="dashboardRoutineFilter"></select>
+          </div>
+          <div class="field compact">
+            <label for="dashboardBranchFilter">Filial</label>
+            <select id="dashboardBranchFilter"></select>
+          </div>
+          <div class="field compact">
+            <label for="dashboardCycleFilter">Ciclo</label>
+            <select id="dashboardCycleFilter"></select>
+          </div>
+          <button class="text-button" id="clearDashboardFilters">Limpar filtros</button>
+          <span class="last-update" id="lastUpdate"></span>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="dashboard-grid two-columns">
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Execução</span>
+                <h2>Progresso por rotina</h2>
+              </div>
+            </div>
+            <div id="routineProgressChart" class="bar-chart"></div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Distribuição</span>
+                <h2>Status dos controles</h2>
+              </div>
+            </div>
+            <div class="donut-layout">
+              <div class="donut" id="statusDonut" aria-label="Distribuição de status">
+                <div class="donut-center"><strong id="donutTotal">0</strong><span>controles</span></div>
+              </div>
+              <div id="statusLegend" class="legend"></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="dashboard-grid two-columns">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Cobranças</span>
+                <h2>Pendentes de retorno</h2>
+              </div>
+              <button class="text-button" data-go-view="activities" data-status-filter="Aguardando retorno">Ver todos</button>
+            </div>
+            <div id="pendingReturns" class="stack-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Prioridade</span>
+                <h2>Pontos de atenção</h2>
+              </div>
+            </div>
+            <div id="attentionList" class="stack-list"></div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Comparativo</span>
+              <h2>Andamento por filial</h2>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Filial</th>
+                  <th>Controles</th>
+                  <th>Concluídos</th>
+                  <th>Pendências</th>
+                  <th>Progresso médio</th>
+                </tr>
+              </thead>
+              <tbody id="branchSummaryBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="view-activities">
+        <div class="filters-panel panel">
+          <div class="search-field">
+            <span aria-hidden="true">⌕</span>
+            <input id="activitySearch" type="search" placeholder="Pesquisar título, filial, responsável ou pendência">
+          </div>
+          <select id="activityRoutineFilter" aria-label="Filtrar por rotina"></select>
+          <select id="activityStatusFilter" aria-label="Filtrar por status"></select>
+          <select id="activityBranchFilter" aria-label="Filtrar por filial"></select>
+          <select id="activityCycleFilter" aria-label="Filtrar por ciclo"></select>
+          <button class="text-button" id="clearActivityFilters">Limpar</button>
+        </div>
+
+        <div class="section-toolbar">
+          <div>
+            <strong id="activityCount">0 controles</strong>
+            <span>Use os filtros para localizar rapidamente o que está pendente.</span>
+          </div>
+          <div class="segmented" role="group" aria-label="Modo de visualização">
+            <button class="active" data-layout="cards">Cards</button>
+            <button data-layout="table">Tabela</button>
+          </div>
+        </div>
+
+        <div id="activityCards" class="activity-grid"></div>
+        <div id="activityTableContainer" class="panel table-wrap hidden">
+          <table>
+            <thead>
+              <tr>
+                <th>Controle</th>
+                <th>Rotina</th>
+                <th>Filial</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th>Progresso</th>
+                <th>Prazo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-branches">
+        <div class="content-header">
+          <div>
+            <h2>Cadastro de filiais</h2>
+            <p>Centralize as unidades usadas nos checklists, gembas e auditorias.</p>
+          </div>
+          <button class="button primary" id="newBranchButton">+ Nova filial</button>
+        </div>
+        <div id="branchCards" class="management-grid"></div>
+      </section>
+
+      <section class="view" id="view-people">
+        <div class="content-header">
+          <div>
+            <h2>Responsáveis e contatos</h2>
+            <p>Cadastre quem precisa executar, enviar evidências ou retornar pendências.</p>
+          </div>
+          <button class="button primary" id="newPersonButton">+ Novo responsável</button>
+        </div>
+        <div id="peopleCards" class="management-grid"></div>
+      </section>
+
+      <section class="view" id="view-data">
+        <div class="data-grid">
+          <article class="panel data-card">
+            <span class="data-icon">↓</span>
+            <h2>Baixar backup</h2>
+            <p>Salve todos os controles, filiais e responsáveis em um arquivo JSON.</p>
+            <button class="button primary" id="exportBackupButton">Baixar backup JSON</button>
+          </article>
+          <article class="panel data-card">
+            <span class="data-icon">↑</span>
+            <h2>Restaurar backup</h2>
+            <p>Importe um backup criado neste aplicativo. Os dados atuais serão substituídos.</p>
+            <label class="button secondary file-button">Selecionar arquivo
+              <input id="importBackupInput" type="file" accept="application/json,.json">
+            </label>
+          </article>
+          <article class="panel data-card">
+            <span class="data-icon">CSV</span>
+            <h2>Exportar relatório</h2>
+            <p>Gere uma planilha CSV com os controles e seus principais campos.</p>
+            <button class="button secondary" id="exportCsvButton">Baixar relatório CSV</button>
+          </article>
+          <article class="panel data-card danger-card">
+            <span class="data-icon">!</span>
+            <h2>Limpar dados</h2>
+            <p>Apague os dados deste navegador e volte para a estrutura inicial.</p>
+            <button class="button danger" id="resetDataButton">Limpar e reiniciar</button>
+          </article>
+        </div>
+        <article class="panel storage-note">
+          <h2>Como os dados funcionam</h2>
+          <p>Este projeto não usa banco de dados nem servidor. As informações ficam no armazenamento local do navegador. Faça backup com frequência, principalmente antes de limpar o navegador ou trocar de computador.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="activityModal" hidden>
+    <div class="modal large" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
+      <div class="modal-header">
+        <div>
+          <span class="panel-kicker">Controle operacional</span>
+          <h2 id="activityModalTitle">Novo controle</h2>
+        </div>
+        <button class="icon-button" data-close-modal="activityModal" aria-label="Fechar">×</button>
+      </div>
+      <form id="activityForm">
+        <input type="hidden" id="activityId">
+        <div class="form-grid">
+          <div class="field span-2">
+            <label for="activityTitle">Título do controle *</label>
+            <input id="activityTitle" required placeholder="Ex.: Checklist de separação de marcas">
+          </div>
+          <div class="field">
+            <label for="activityRoutine">Rotina *</label>
+            <select id="activityRoutine" required></select>
+          </div>
+          <div class="field">
+            <label for="activityBranch">Filial *</label>
+            <select id="activityBranch" required></select>
+          </div>
+          <div class="field">
+            <label for="activityCycle">Ciclo</label>
+            <input id="activityCycle" placeholder="Ex.: Ciclo 2026.2">
+          </div>
+          <div class="field">
+            <label for="activityResponsible">Responsável</label>
+            <select id="activityResponsible"></select>
+          </div>
+          <div class="field">
+            <label for="activityStatus">Status *</label>
+            <select id="activityStatus" required></select>
+          </div>
+          <div class="field">
+            <label for="activityPriority">Prioridade</label>
+            <select id="activityPriority">
+              <option>Baixa</option>
+              <option selected>Média</option>
+              <option>Alta</option>
+              <option>Crítica</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="activityProgress">Progresso: <strong id="progressValue">0%</strong></label>
+            <input id="activityProgress" type="range" min="0" max="100" step="5" value="0">
+          </div>
+          <div class="field">
+            <label for="activityDueDate">Prazo</label>
+            <input id="activityDueDate" type="date">
+          </div>
+          <div class="field span-2">
+            <label for="activityPendingFrom">Pendente de retorno de</label>
+            <input id="activityPendingFrom" placeholder="Nome, setor ou contato que precisa responder">
+          </div>
+          <div class="field span-2">
+            <label for="activityBlocker">O que está pegando / bloqueio</label>
+            <textarea id="activityBlocker" rows="3" placeholder="Descreva o problema, documento faltante, evidência pendente ou impedimento"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="activityEvidence">O que já tenho / evidências</label>
+            <textarea id="activityEvidence" rows="3" placeholder="Registre documentos, fotos, respostas e itens já concluídos"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="activityNotes">Próxima ação e observações</label>
+            <textarea id="activityNotes" rows="3" placeholder="Informe a próxima cobrança, visita, envio ou ação necessária"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="button ghost" id="deleteActivityButton" hidden>Excluir</button>
+          <div class="spacer"></div>
+          <button type="button" class="button secondary" data-close-modal="activityModal">Cancelar</button>
+          <button type="submit" class="button primary">Salvar controle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="branchModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="branchModalTitle">
+      <div class="modal-header">
+        <h2 id="branchModalTitle">Nova filial</h2>
+        <button class="icon-button" data-close-modal="branchModal" aria-label="Fechar">×</button>
+      </div>
+      <form id="branchForm">
+        <input type="hidden" id="branchId">
+        <div class="field">
+          <label for="branchName">Nome da filial *</label>
+          <input id="branchName" required placeholder="Ex.: Filial Parauapebas">
+        </div>
+        <div class="field">
+          <label for="branchCode">Código / sigla</label>
+          <input id="branchCode" placeholder="Ex.: PA01">
+        </div>
+        <div class="field">
+          <label for="branchRegion">Região</label>
+          <input id="branchRegion" placeholder="Ex.: Sudeste do Pará">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="button ghost" id="deleteBranchButton" hidden>Excluir</button>
+          <div class="spacer"></div>
+          <button type="button" class="button secondary" data-close-modal="branchModal">Cancelar</button>
+          <button type="submit" class="button primary">Salvar filial</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="personModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="personModalTitle">
+      <div class="modal-header">
+        <h2 id="personModalTitle">Novo responsável</h2>
+        <button class="icon-button" data-close-modal="personModal" aria-label="Fechar">×</button>
+      </div>
+      <form id="personForm">
+        <input type="hidden" id="personId">
+        <div class="field">
+          <label for="personName">Nome *</label>
+          <input id="personName" required placeholder="Nome do responsável">
+        </div>
+        <div class="field">
+          <label for="personRole">Função / setor</label>
+          <input id="personRole" placeholder="Ex.: Gestor da filial">
+        </div>
+        <div class="field">
+          <label for="personContact">Contato</label>
+          <input id="personContact" placeholder="E-mail ou telefone">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="button ghost" id="deletePersonButton" hidden>Excluir</button>
+          <div class="spacer"></div>
+          <button type="button" class="button secondary" data-close-modal="personModal">Cancelar</button>
+          <button type="submit" class="button primary">Salvar responsável</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
