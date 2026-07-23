@@ -7,6 +7,11 @@
  */
 
 (function applyIndependentChecklistFlow() {
+  const extraStyles = document.createElement('link');
+  extraStyles.rel = 'stylesheet';
+  extraStyles.href = './app-v4.css?v=4';
+  document.head.appendChild(extraStyles);
+
   function setAssociationVisibility(enabled) {
     const associationSection = $('associationSection') || $('branchSelection')?.closest('.form-section');
     const executionSection = $('executionSection');
