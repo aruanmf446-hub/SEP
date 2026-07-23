@@ -12,6 +12,21 @@
   extraStyles.href = './app-v4.css?v=4';
   document.head.appendChild(extraStyles);
 
+  const nav = document.querySelector('.nav');
+  if (nav && !nav.querySelector('[data-gemba-link]')) {
+    const gembaLink = document.createElement('a');
+    gembaLink.className = 'nav-item';
+    gembaLink.dataset.gembaLink = '';
+    gembaLink.href = './gemba.html';
+    gembaLink.style.textDecoration = 'none';
+    gembaLink.innerHTML = '<span class="nav-icon">03</span>Construtor Gemba';
+    nav.insertBefore(gembaLink, nav.children[2] || null);
+    [...nav.querySelectorAll('.nav-item')].forEach((item, index) => {
+      const icon = item.querySelector('.nav-icon');
+      if (icon) icon.textContent = String(index + 1).padStart(2, '0');
+    });
+  }
+
   function setAssociationVisibility(enabled) {
     const associationSection = $('associationSection') || $('branchSelection')?.closest('.form-section');
     const executionSection = $('executionSection');
