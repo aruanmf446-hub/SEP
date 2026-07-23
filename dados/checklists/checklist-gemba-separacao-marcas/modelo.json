@@ -1,0 +1,48 @@
+{
+  "id": "modelo-separacao-marcas-001",
+  "slug": "checklist-gemba-separacao-marcas",
+  "title": "Checklist Gemba — Separação de Marcas",
+  "type": "externo",
+  "area": "Estoque de peças",
+  "description": "Verificar identificação, separação e organização das áreas por marca. Leia a orientação de cada item e fotografe somente o enquadramento solicitado.",
+  "items": [
+    {
+      "id": "item-area-volvo",
+      "title": "Área Volvo identificada e separada",
+      "area": "Estoque / área Volvo",
+      "guidance": "Confirme se a área destinada à Volvo está identificada e sem materiais de outras marcas misturados. Se estiver conforme, fotografe somente a área Volvo, de frente, mostrando a identificação e a organização. Não é necessário enquadrar a área SDLG.",
+      "photoRule": "sim",
+      "observationRequired": false,
+      "modelImagePath": ""
+    },
+    {
+      "id": "item-corredor",
+      "title": "Corredor livre e organizado",
+      "area": "Corredor do estoque",
+      "guidance": "Verifique se o corredor está livre para circulação, sem caixas ou peças fora da área demarcada. Se estiver conforme, fotografe o corredor por inteiro.",
+      "photoRule": "sim",
+      "observationRequired": false,
+      "modelImagePath": ""
+    },
+    {
+      "id": "item-patio",
+      "title": "Pátio sem materiais fora do local",
+      "area": "Pátio",
+      "guidance": "Confirme se os materiais estão nas áreas definidas e se não há itens obstruindo circulação ou acesso. Registre a situação encontrada.",
+      "photoRule": "sempre",
+      "observationRequired": false,
+      "modelImagePath": ""
+    },
+    {
+      "id": "item-escritorio",
+      "title": "Escritório organizado",
+      "area": "Escritório do estoque",
+      "guidance": "Confira organização da mesa, documentos, armários e ausência de materiais armazenados de forma inadequada.",
+      "photoRule": "sim",
+      "observationRequired": false,
+      "modelImagePath": ""
+    }
+  ],
+  "createdAt": "2026-07-23T20:50:00.000Z",
+  "updatedAt": "2026-07-23T20:50:00.000Z"
+}
