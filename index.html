@@ -7,8 +7,9 @@
   <meta name="description" content="Controle interno de checklists, auditorias, pendências e certificações por filial.">
   <title>SEP | Controle de Certificações</title>
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=5">
-  <link rel="stylesheet" href="./app-v5.css?v=5">
+  <link rel="stylesheet" href="./styles.css?v=6">
+  <link rel="stylesheet" href="./app-v5.css?v=6">
+  <link rel="stylesheet" href="./app-v6.css?v=6">
 </head>
 <body>
   <div class="app-shell">
@@ -21,7 +22,7 @@
         <button class="nav-item" data-view="people"><span class="nav-icon">04</span>Responsáveis</button>
         <button class="nav-item" data-view="data"><span class="nav-icon">05</span>Dados e backup</button>
       </nav>
-      <div class="sidebar-footer"><span class="storage-dot"></span><div><strong>Armazenamento local</strong><small>Dados salvos neste navegador</small></div></div>
+      <div class="sidebar-footer"><span class="storage-dot"></span><div><strong>Controle interno</strong><small>Gemba conectado ao Vercel Blob</small></div></div>
     </aside>
 
     <main class="main-content">
@@ -52,13 +53,13 @@
 
       <section class="view" id="view-activities">
         <div class="filters-panel panel"><div class="search-field"><span aria-hidden="true">⌕</span><input id="activitySearch" type="search" placeholder="Pesquisar checklist, filial, responsável ou pendência"></div><select id="activityRoutineFilter"></select><select id="activityStatusFilter"></select><select id="activityBranchFilter"></select><select id="activityCycleFilter"></select><button class="text-button" id="clearActivityFilters">Limpar</button></div>
-        <div class="section-toolbar"><div><strong id="activityCount">0 checklists</strong><span>Cadastre o checklist primeiro. A associação com as filiais é feita depois.</span></div><div class="segmented"><button class="active" data-layout="cards">Cards</button><button data-layout="table">Tabela</button></div></div>
+        <div class="section-toolbar"><div><strong id="activityCount">0 checklists</strong><span>Controle o andamento e compartilhe a inspeção Gemba com o responsável.</span></div><div class="segmented"><button class="active" data-layout="cards">Cards</button><button data-layout="table">Tabela</button></div></div>
         <div id="activityCards" class="activity-grid"></div>
         <div id="activityTableContainer" class="panel table-wrap hidden"><table><thead><tr><th>Checklist</th><th>Rotina</th><th>Ciclo</th><th>Filiais</th><th>Concluídas</th><th>Pendentes</th><th>Progresso</th><th></th></tr></thead><tbody id="activityTableBody"></tbody></table></div>
       </section>
 
       <section class="view" id="view-branches"><div class="content-header"><div><h2>Cadastro de filiais</h2><p>As filiais são cadastradas separadamente e associadas depois aos checklists.</p></div><button class="button primary" id="newBranchButton">+ Nova filial</button></div><div id="branchCards" class="management-grid"></div></section>
-      <section class="view" id="view-people"><div class="content-header"><div><h2>Responsáveis e contatos</h2><p>Defina responsáveis diferentes para cada filial depois da associação.</p></div><button class="button primary" id="newPersonButton">+ Novo responsável</button></div><div id="peopleCards" class="management-grid"></div></section>
+      <section class="view" id="view-people"><div class="content-header"><div><h2>Responsáveis e contatos</h2><p>Cadastre as pessoas que podem receber links de inspeção e ações das filiais.</p></div><button class="button primary" id="newPersonButton">+ Novo responsável</button></div><div id="peopleCards" class="management-grid"></div></section>
       <section class="view" id="view-data">
         <div class="data-grid">
           <article class="panel data-card"><span class="data-icon">↓</span><h2>Baixar backup</h2><p>Salve checklists, filiais, responsáveis e todo o andamento em um arquivo JSON.</p><button class="button primary" id="exportBackupButton">Baixar backup JSON</button></article>
@@ -66,18 +67,18 @@
           <article class="panel data-card"><span class="data-icon">CSV</span><h2>Exportar relatório</h2><p>Gere uma planilha detalhada com uma linha para cada ação de cada filial.</p><button class="button secondary" id="exportCsvButton">Baixar relatório CSV</button></article>
           <article class="panel data-card danger-card"><span class="data-icon">!</span><h2>Limpar dados</h2><p>Apague os dados deste navegador e volte para a estrutura inicial.</p><button class="button danger" id="resetDataButton">Limpar e reiniciar</button></article>
         </div>
-        <article class="panel storage-note"><h2>Como os dados funcionam</h2><p>Este projeto não usa banco de dados nem servidor. As informações ficam no armazenamento local do navegador.</p></article>
+        <article class="panel storage-note"><h2>Como os dados funcionam</h2><p>O controle permanece neste navegador. Modelos Gemba, fotos e inspeções ficam centralizados no Vercel Blob.</p></article>
       </section>
     </main>
   </div>
 
   <div class="modal-backdrop" id="activityModal" hidden>
     <div class="modal checklist-modal" role="dialog" aria-modal="true" aria-labelledby="activityModalTitle">
-      <div class="modal-header sticky-modal-header"><div><span class="panel-kicker">Checklist centralizado</span><h2 id="activityModalTitle">Novo checklist</h2><p class="modal-subtitle">Cadastre primeiro o checklist. A associação com as filiais será feita somente depois de salvar.</p></div><button class="icon-button" data-close-modal="activityModal" aria-label="Fechar">×</button></div>
+      <div class="modal-header sticky-modal-header"><div><span class="panel-kicker">Checklist centralizado</span><h2 id="activityModalTitle">Novo checklist</h2><p class="modal-subtitle">Cadastre o controle, associe uma inspeção Gemba e escolha quem receberá o link.</p></div><button class="icon-button" data-close-modal="activityModal" aria-label="Fechar">×</button></div>
       <form id="activityForm">
         <input type="hidden" id="activityId">
         <section class="form-section">
-          <div class="section-title"><div><span class="section-step">1</span><h3>Cadastro do checklist</h3></div><p>Estas informações não dependem de nenhuma filial.</p></div>
+          <div class="section-title"><div><span class="section-step">1</span><h3>Cadastro do checklist</h3></div><p>Informações gerais do controle.</p></div>
           <div class="form-grid">
             <div class="field span-2"><label for="activityTitle">Nome do checklist *</label><input id="activityTitle" required placeholder="Ex.: Certificação ciclo 2026"></div>
             <div class="field"><label for="activityRoutine">Tipo de checklist *</label><select id="activityRoutine" required></select></div>
@@ -88,16 +89,29 @@
           </div>
         </section>
 
+        <section class="form-section gemba-association-section">
+          <div class="section-title"><div><span class="section-step">2</span><h3>Inspeção Gemba</h3></div><p>Escolha o modelo e a pessoa que fará a inspeção.</p></div>
+          <div class="form-grid gemba-association-grid">
+            <div class="field"><label for="activityGembaTemplate">Modelo Gemba</label><select id="activityGembaTemplate"><option value="">Carregando modelos...</option></select></div>
+            <div class="field"><label for="activityGembaInspector">Responsável pela inspeção</label><select id="activityGembaInspector"><option value="">Selecione uma pessoa</option></select></div>
+            <div class="gemba-link-panel span-2" id="gembaLinkPanel">
+              <div class="gemba-link-copy"><span>Link da inspeção</span><strong id="gembaLinkStatus">Selecione um modelo e um responsável.</strong></div>
+              <input id="activityGembaLink" type="text" readonly aria-label="Link da inspeção Gemba">
+              <div class="gemba-link-actions"><button type="button" class="button secondary" id="openActivityGembaLink" disabled>Abrir</button><button type="button" class="button primary" id="copyActivityGembaLink" disabled>Copiar link</button></div>
+            </div>
+          </div>
+        </section>
+
         <section class="form-section association-locked" id="associationLockedNotice">
-          <div class="empty-state"><strong>Associação feita depois</strong><span>Salve este checklist primeiro. Depois abra o checklist cadastrado para escolher as filiais participantes e informar o andamento de cada uma.</span></div>
+          <div class="empty-state"><strong>Associação com filiais feita depois</strong><span>Salve este checklist primeiro. Depois abra o controle para escolher as filiais e detalhar as ações.</span></div>
         </section>
 
         <section class="form-section hidden" id="associationSection">
-          <div class="section-title branch-selection-title"><div><span class="section-step">2</span><h3>Associar filiais</h3></div><div class="inline-actions"><button type="button" class="text-button" id="selectAllBranchesButton">Selecionar todas</button><button type="button" class="text-button muted" id="clearBranchesButton">Limpar</button></div></div>
-          <p class="section-help">Escolha agora quais filiais participarão deste checklist já cadastrado.</p><div id="branchSelection" class="branch-selector"></div>
+          <div class="section-title branch-selection-title"><div><span class="section-step">3</span><h3>Associar filiais</h3></div><div class="inline-actions"><button type="button" class="text-button" id="selectAllBranchesButton">Selecionar todas</button><button type="button" class="text-button muted" id="clearBranchesButton">Limpar</button></div></div>
+          <p class="section-help">Escolha quais filiais participarão deste checklist.</p><div id="branchSelection" class="branch-selector"></div>
         </section>
         <section class="form-section execution-section hidden" id="executionSection">
-          <div class="section-title"><div><span class="section-step">3</span><h3>Andamento por filial</h3></div><strong class="selection-count" id="selectedBranchCount">0 filiais</strong></div>
+          <div class="section-title"><div><span class="section-step">4</span><h3>Andamento por filial</h3></div><strong class="selection-count" id="selectedBranchCount">0 filiais</strong></div>
           <p class="section-help">Expanda cada filial e crie ações separadas por área, departamento ou responsável. As ações concluídas recolhem automaticamente.</p><div id="branchExecutionList" class="branch-execution-list"></div>
         </section>
         <div class="modal-actions sticky-modal-actions"><button type="button" class="button ghost" id="deleteActivityButton" hidden>Excluir checklist</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="activityModal">Cancelar</button><button type="submit" class="button primary" id="saveChecklistButton">Cadastrar checklist</button></div>
@@ -108,10 +122,11 @@
   <div class="modal-backdrop" id="branchModal" hidden><div class="modal"><div class="modal-header"><h2 id="branchModalTitle">Nova filial</h2><button class="icon-button" data-close-modal="branchModal">×</button></div><form id="branchForm"><input type="hidden" id="branchId"><div class="field"><label for="branchName">Nome da filial *</label><input id="branchName" required></div><div class="field"><label for="branchCode">Código / sigla</label><input id="branchCode"></div><div class="field"><label for="branchRegion">Região</label><input id="branchRegion"></div><div class="modal-actions"><button type="button" class="button ghost" id="deleteBranchButton" hidden>Excluir</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="branchModal">Cancelar</button><button type="submit" class="button primary">Salvar filial</button></div></form></div></div>
   <div class="modal-backdrop" id="personModal" hidden><div class="modal"><div class="modal-header"><h2 id="personModalTitle">Novo responsável</h2><button class="icon-button" data-close-modal="personModal">×</button></div><form id="personForm"><input type="hidden" id="personId"><div class="field"><label for="personName">Nome *</label><input id="personName" required></div><div class="field"><label for="personRole">Função / setor</label><input id="personRole"></div><div class="field"><label for="personContact">Contato</label><input id="personContact"></div><div class="modal-actions"><button type="button" class="button ghost" id="deletePersonButton" hidden>Excluir</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="personModal">Cancelar</button><button type="submit" class="button primary">Salvar responsável</button></div></form></div></div>
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
-  <script src="./app-v5-preload.js?v=5" defer></script>
-  <script src="./app.js?v=5" defer></script>
-  <script src="./app-v4.js?v=5" defer></script>
-  <script src="./app-v5.js?v=5" defer></script>
-  <script src="./app-v5-compat.js?v=5" defer></script>
+  <script src="./app-v5-preload.js?v=6" defer></script>
+  <script src="./app.js?v=6" defer></script>
+  <script src="./app-v4.js?v=6" defer></script>
+  <script src="./app-v5.js?v=6" defer></script>
+  <script src="./app-v5-compat.js?v=6" defer></script>
+  <script src="./app-v6.js?v=6" defer></script>
 </body>
 </html>
