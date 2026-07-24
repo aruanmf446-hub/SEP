@@ -15,6 +15,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validar_chave_gembraa:
+    name: Validar armazenamento GitHub
+    runs-on: ubuntu-latest
+    environment:
+      name: gembraa
+    steps:
+      - name: Testar CHAVEY e gravar confirmação
+        env:
+          GH_TOKEN: ${{ secrets.CHAVEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::O secret CHAVEY não foi encontrado no ambiente gembraa."
+            exit 1
+          fi
+
+          LOGIN="$(gh api user --jq .login)"
+          REPO="$(gh api "repos/${GITHUB_REPOSITORY}" --jq .full_name)"
+          gh api "repos/${GITHUB_REPOSITORY}/branches/dados" --jq .name >/dev/null
+
+          TESTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          CONTENT="$(printf '{\n  \"app\": \"SEP - Construtor Gemba\",\n  \"source\": \"GitHub Actions\",\n  \"environment\": \"gembraa\",\n  \"secretName\": \"CHAVEY\",\n  \"authenticatedUser\": \"%s\",\n  \"repository\": \"%s\",\n  \"branch\": \"dados\",\n  \"testedAt\": \"%s\"\n}\n' "$LOGIN" "$REPO" "$TESTED_AT" | base64 -w0)"
+          PATH_API="repos/${GITHUB_REPOSITORY}/contents/dados/conexao-actions.json"
+          CURRENT_SHA="$(gh api "${PATH_API}?ref=dados" --jq .sha 2>/dev/null || true)"
+
+          if [ -n "$CURRENT_SHA" ]; then
+            gh api --method PUT "$PATH_API" \
+              -f message='Validar CHAVEY do ambiente gembraa' \
+              -f content="$CONTENT" \
+              -f branch='dados' \
+              -f sha="$CURRENT_SHA" >/dev/null
+          else
+            gh api --method PUT "$PATH_API" \
+              -f message='Validar CHAVEY do ambiente gembraa' \
+              -f content="$CONTENT" \
+              -f branch='dados' >/dev/null
+          fi
+
+          echo "CHAVEY validado com a conta ${LOGIN} e gravação confirmada em ${REPO}@dados."
+
   deploy:
     environment:
       name: github-pages
