@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="theme-color" content="#0b1736">
+  <meta name="description" content="Construtor, preenchimento e avaliação de checklists Gemba com fotos.">
+  <title>SEP | Checklists Gemba</title>
+  <link rel="stylesheet" href="./styles.css?v=gemba-v13">
+  <link rel="stylesheet" href="./gemba.css?v=gemba-v13">
+  <link rel="stylesheet" href="./gemba-diagnostics.css?v=gemba-v13">
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(items => items.forEach(item => item.unregister()));
+    if ('caches' in window) caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
+    if (!sessionStorage.getItem('sep-gemba-v13-cleaned')) {
+      localStorage.removeItem('sep-gemba-github-config-v1');
+      sessionStorage.setItem('sep-gemba-v13-cleaned', '1');
+    }
+  </script>
+</head>
+<body>
+  <div class="app-shell" id="adminShell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">S</div><div><strong>SEP</strong><span>Controle de certificações</span></div></div>
+      <nav class="nav" aria-label="Navegação principal">
+        <a class="nav-item" href="./index.html"><span class="nav-icon">01</span>Dashboard</a>
+        <a class="nav-item" href="./index.html#checklists"><span class="nav-icon">02</span>Checklists e rotinas</a>
+        <a class="nav-item active" href="./gemba-v13.html"><span class="nav-icon">03</span>Construtor Gemba</a>
+        <a class="nav-item" href="./index.html#filiais"><span class="nav-icon">04</span>Filiais</a>
+        <a class="nav-item" href="./index.html#responsaveis"><span class="nav-icon">05</span>Responsáveis</a>
+        <a class="nav-item" href="./index.html#dados"><span class="nav-icon">06</span>Dados e backup</a>
+      </nav>
+      <div class="sidebar-footer"><span class="storage-dot"></span><div><strong>Armazenamento GitHub</strong><small>CHAVEY validada · branch dados</small></div></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button>
+        <div><p class="eyebrow">Checklists com evidências</p><h1>Construtor Gemba</h1></div>
+        <div class="topbar-actions">
+          <button class="button secondary" id="githubSettingsButton">Diagnosticar gravação</button>
+          <button class="button primary" id="newTemplateButton">+ Novo modelo</button>
+        </div>
+      </header>
+
+      <section class="gemba-summary-grid" id="summaryGrid"></section>
+      <section class="panel gemba-toolbar">
+        <div class="gemba-tabs" role="tablist">
+          <button class="active" data-tab="templates">Modelos</button>
+          <button data-tab="submissions">Envios recebidos</button>
+          <button data-tab="reviews">Avaliações</button>
+        </div>
+        <div class="search-field gemba-search"><span aria-hidden="true">⌕</span><input id="gembaSearch" type="search" placeholder="Pesquisar modelo, inspetor ou filial"></div>
+        <button class="text-button" id="refreshDataButton">Atualizar</button>
+      </section>
+
+      <section class="gemba-tab-view active" id="tab-templates">
+        <div class="section-toolbar"><div><strong id="templateCount">0 modelos</strong><span>Configure os itens, orientações e fotos de referência antes de gerar o link.</span></div></div>
+        <div class="gemba-card-grid" id="templateGrid"></div>
+      </section>
+      <section class="gemba-tab-view" id="tab-submissions">
+        <div class="section-toolbar"><div><strong id="submissionCount">0 envios</strong><span>Acompanhe checklists aguardando sua avaliação.</span></div></div>
+        <div class="gemba-list" id="submissionList"></div>
+      </section>
+      <section class="gemba-tab-view" id="tab-reviews">
+        <div class="section-toolbar"><div><strong id="reviewCount">0 avaliações</strong><span>Histórico de aprovações, reprovações e reenvios.</span></div></div>
+        <div class="gemba-list" id="reviewList"></div>
+      </section>
+    </main>
+  </div>
+
+  <main class="inspector-shell hidden" id="inspectorShell">
+    <header class="inspector-header"><div class="inspector-brand"><div class="brand-mark">S</div><div><strong>SEP</strong><span>Checklist de inspeção</span></div></div><span class="inspector-date" id="inspectorDate"></span></header>
+    <section class="inspector-content" id="inspectorContent"></section>
+  </main>
+
+  <div class="modal-backdrop" id="githubSettingsModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="githubSettingsTitle">
+      <div class="modal-header"><div><span class="panel-kicker">Diagnóstico de transporte</span><h2 id="githubSettingsTitle">Testar autenticação do navegador</h2></div><button class="icon-button" data-close-modal="githubSettingsModal">×</button></div>
+      <form id="githubSettingsForm">
+        <div class="field"><label for="githubToken">Token pessoal do GitHub *</label><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_... ou ghp_..." required><small class="github-token-help"><strong>Cole o mesmo CHAVEY.</strong> O sistema testará token, Bearer e Basic em /user antes de gravar.</small></div>
+        <div class="field"><label for="githubOwner">Proprietário</label><input id="githubOwner" value="aruanmf446-hub" required></div>
+        <div class="field"><label for="githubRepo">Repositório</label><input id="githubRepo" value="SEP" required></div>
+        <div class="field"><label for="githubBranch">Branch de dados</label><input id="githubBranch" value="dados" required></div>
+        <p class="form-note">Se nenhum formato autenticar /user, o problema está no navegador, extensão, antivírus ou rede corporativa removendo o cabeçalho Authorization — não no token.</p>
+        <div id="githubConnectionStatus" class="github-connection-status" hidden></div>
+        <div class="modal-actions"><button type="button" class="button ghost" id="clearGithubTokenButton">Remover chave local</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="githubSettingsModal">Cancelar</button><button type="submit" class="button primary">Testar transporte e gravar</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="templateModal" hidden>
+    <div class="modal gemba-modal" role="dialog" aria-modal="true" aria-labelledby="templateModalTitle">
+      <div class="modal-header sticky-modal-header"><div><span class="panel-kicker">Modelo reutilizável</span><h2 id="templateModalTitle">Novo checklist Gemba</h2><p class="modal-subtitle">Configure o checklist primeiro. O link será gerado depois de salvar.</p></div><button class="icon-button" data-close-modal="templateModal">×</button></div>
+      <form id="templateForm"><input type="hidden" id="templateId">
+        <section class="form-section"><div class="section-title"><div><span class="section-step">1</span><h3>Informações do checklist</h3></div><p>Dados visíveis para o inspetor.</p></div><div class="form-grid"><div class="field span-2"><label for="templateTitle">Título *</label><input id="templateTitle" required placeholder="Ex.: Checklist Gemba — Separação de Marcas"></div><div class="field"><label for="templateType">Tipo *</label><select id="templateType"><option value="externo">Externo</option><option value="interno">Interno</option></select></div><div class="field"><label for="templateArea">Área geral</label><input id="templateArea" placeholder="Ex.: Estoque de peças"></div><div class="field span-2"><label for="templateDescription">Orientação geral</label><textarea id="templateDescription" rows="3" placeholder="Explique o objetivo do checklist e o padrão esperado"></textarea></div></div></section>
+        <section class="form-section"><div class="section-title"><div><span class="section-step">2</span><h3>Itens de conferência</h3></div><button type="button" class="button secondary compact-button" id="addTemplateItemButton">+ Adicionar item</button></div><p class="section-help">Cada item pode ter foto-modelo, orientação, resposta Sim/Não e regra de evidência.</p><div class="template-item-list" id="templateItemList"></div></section>
+        <div class="modal-actions sticky-modal-actions"><button type="button" class="button ghost" id="deleteTemplateButton" hidden>Excluir modelo</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="templateModal">Cancelar</button><button type="submit" class="button primary">Salvar modelo no GitHub</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="reviewModal" hidden>
+    <div class="modal gemba-modal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+      <div class="modal-header sticky-modal-header"><div><span class="panel-kicker">Avaliação do envio</span><h2 id="reviewModalTitle">Revisar checklist</h2><p class="modal-subtitle" id="reviewModalSubtitle"></p></div><button class="icon-button" data-close-modal="reviewModal">×</button></div>
+      <form id="reviewForm"><input type="hidden" id="reviewChecklistId"><input type="hidden" id="reviewSubmissionId"><div id="reviewItemList" class="review-item-list"></div><div class="modal-actions sticky-modal-actions"><button type="button" class="button secondary" data-close-modal="reviewModal">Cancelar</button><div class="spacer"></div><button type="submit" class="button primary">Salvar avaliação</button></div></form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+  <script src="./gemba-core.js?v=gemba-v13" defer></script>
+  <script src="./gemba-auth-v13.js?v=gemba-v13" defer></script>
+  <script src="./gemba-error-fix-v10.js?v=gemba-v13" defer></script>
+  <script src="./gemba-admin.js?v=gemba-v13" defer></script>
+  <script src="./gemba-inspector.js?v=gemba-v13" defer></script>
+  <script src="./gemba-direct-write-v2.js?v=gemba-v13" defer></script>
+  <script src="./gemba-init.js?v=gemba-v13" defer></script>
+</body>
+</html>
