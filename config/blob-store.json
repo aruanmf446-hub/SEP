@@ -1,5 +1,7 @@
 {
   "storeId": "BcKOQCrDcq65KbF0",
+  "encryptedToken": "LlSwlngT5U3271kSD6hHHIE3oFwmRAedSmQ84gznz5MycXyDkfdbwq1g4kO0bIKyTXZ0xsiydsWi0a6aNEal1BakCCx6p4UObkYL3NWm8F8iCdq0apd0rbFhQ9Av2QxcQ3OfchetuomGNA6qFVz5PL0qX7+YxXthUzFFG7iotpF2mu3DkAEQXDeb9mpFIlR3qheuZXIFJaSzANF31amtXdY7t4DMcD9awQBVQm20ig1EshQME1nNaIgOgke+dYWUxcvNuLdMxRdW26wlV8hHw5uaQ3qE9JMYdomgZYKUek1WwSLIp4rUrEU3jlj2Yxqzqf5NIS3bGOSVi+pduo2jta7WG3iL6KrJm/XMBjc3YIi2YItoOf7E8raI6sGh0Gd7Xg4E7i+C0LO0o1U/Lcif6QU9t99fcosZq2z4E/Y3hBwmg7sSgImV4qTSg2lIUAcbXEbxlN8Da/BBXH2Fgmu/WzGrAqt65Jin1Dqlo0X+4kI+b6/nONjCZWWwv2P30sz0",
+  "encryption": "RSA-OAEP-SHA256",
   "source": "gembraa/BLOB_READ_WRITE_TOKEN",
-  "generatedAt": "2026-07-24T16:19:55Z"
+  "generatedAt": "2026-07-24T16:20:22Z"
 }
