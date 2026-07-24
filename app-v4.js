@@ -1,15 +1,16 @@
 'use strict';
 
 /*
- * Correção de fluxo v4:
+ * Fluxo independente:
  * 1. O checklist é cadastrado sem depender de filial.
- * 2. A associação e o andamento das filiais só ficam disponíveis depois que o checklist existe.
+ * 2. O modelo Gemba e o responsável podem ser vinculados no cadastro.
+ * 3. A associação e o andamento das filiais ficam disponíveis depois que o checklist existe.
  */
 
 (function applyIndependentChecklistFlow() {
   const extraStyles = document.createElement('link');
   extraStyles.rel = 'stylesheet';
-  extraStyles.href = './app-v4.css?v=4';
+  extraStyles.href = './app-v4.css?v=6';
   document.head.appendChild(extraStyles);
 
   const nav = document.querySelector('.nav');
@@ -40,8 +41,8 @@
 
     if (subtitle) {
       subtitle.textContent = enabled
-        ? 'O checklist já está cadastrado. Agora você pode associar as filiais e atualizar o andamento.'
-        : 'Cadastre primeiro o checklist. A associação com as filiais será feita somente depois de salvar.';
+        ? 'Atualize o vínculo Gemba, o responsável, as filiais e os andamentos.'
+        : 'Cadastre o controle, associe uma inspeção Gemba e escolha quem receberá o link.';
     }
     if (saveButton) saveButton.textContent = enabled ? 'Salvar alterações' : 'Cadastrar checklist';
   }
@@ -52,6 +53,8 @@
     $('activityModalTitle').textContent = 'Novo checklist';
     $('deleteActivityButton').hidden = true;
     $('activityPriority').value = 'Média';
+    if ($('activityGembaTemplate')) $('activityGembaTemplate').value = '';
+    if ($('activityGembaInspector')) $('activityGembaInspector').value = '';
     editingBranchItems = new Map();
     editingSelectedBranches = new Set();
 
@@ -66,6 +69,8 @@
       $('activityPriority').value = control.priority || 'Média';
       $('activityDueDate').value = control.dueDate || '';
       $('activityDescription').value = control.description || '';
+      if ($('activityGembaTemplate')) $('activityGembaTemplate').value = control.gemba?.templateSlug || '';
+      if ($('activityGembaInspector')) $('activityGembaInspector').value = control.gemba?.inspectorId || '';
 
       (control.branchItems || []).forEach(item => {
         editingSelectedBranches.add(item.branchId);
@@ -106,6 +111,15 @@
     const id = $('activityId').value || uid();
     const previous = state.activities.find(item => item.id === id);
     const isNew = !previous;
+    const gembaTemplateSelect = $('activityGembaTemplate');
+    const gembaInspectorSelect = $('activityGembaInspector');
+    const templateSlug = gembaTemplateSelect?.value || '';
+    const inspectorId = gembaInspectorSelect?.value || '';
+
+    if (templateSlug && !inspectorId) {
+      showToast('Selecione a pessoa responsável pela inspeção Gemba.', 'error');
+      return;
+    }
 
     let branchItems = [];
     if (!isNew) {
@@ -119,6 +133,15 @@
         }));
     }
 
+    const selectedTemplateOption = gembaTemplateSelect?.selectedOptions?.[0];
+    const gemba = templateSlug ? {
+      templateSlug,
+      templateTitle: selectedTemplateOption?.dataset?.title || selectedTemplateOption?.textContent?.trim() || previous?.gemba?.templateTitle || '',
+      inspectorId,
+      assignedAt: previous?.gemba?.inspectorId === inspectorId ? previous.gemba.assignedAt : nowIso(),
+      updatedAt: nowIso()
+    } : null;
+
     const control = {
       id,
       title: $('activityTitle').value.trim(),
@@ -127,6 +150,7 @@
       priority: $('activityPriority').value,
       dueDate: $('activityDueDate').value,
       description: $('activityDescription').value.trim(),
+      gemba,
       branchItems,
       createdAt: previous?.createdAt || nowIso(),
       updatedAt: nowIso()
@@ -138,7 +162,7 @@
 
     closeModal('activityModal');
     saveState(isNew
-      ? 'Checklist cadastrado. Abra-o para associar as filiais.'
-      : 'Checklist e associações atualizados.');
+      ? (gemba ? 'Checklist cadastrado e link Gemba criado.' : 'Checklist cadastrado. Abra-o para associar as filiais.')
+      : 'Checklist, vínculo Gemba e associações atualizados.');
   }, true);
 })();
