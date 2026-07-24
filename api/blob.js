@@ -1,15 +1,15 @@
 import { get, list, put, del } from '@vercel/blob';
 
-const ALLOWED_ORIGINS = new Set([
-  'https://aruanmf446-hub.github.io',
-  'https://aruanmf446-hub.github.io/SEP',
-]);
+const ALLOWED_ORIGINS = new Set(['https://aruanmf446-hub.github.io']);
+
+function getHeader(request, name) {
+  if (request.headers?.get) return request.headers.get(name);
+  return request.headers?.[name.toLowerCase()] || request.headers?.[name] || '';
+}
 
 function corsHeaders(request) {
-  const origin = request.headers.get('origin') || '';
-  const allowOrigin = origin.endsWith('.vercel.app') || ALLOWED_ORIGINS.has(origin)
-    ? origin
-    : '*';
+  const origin = getHeader(request, 'origin') || '';
+  const allowOrigin = origin.endsWith('.vercel.app') || ALLOWED_ORIGINS.has(origin) ? origin : '*';
   return {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
@@ -28,6 +28,15 @@ function json(request, body, status = 200) {
       'Cache-Control': 'no-store',
     },
   });
+}
+
+async function readJsonBody(request) {
+  if (typeof request.json === 'function') return request.json();
+  if (request.body && typeof request.body === 'object' && !Buffer.isBuffer(request.body)) return request.body;
+  const chunks = [];
+  for await (const chunk of request) chunks.push(Buffer.from(chunk));
+  const text = Buffer.concat(chunks).toString('utf8');
+  return text ? JSON.parse(text) : {};
 }
 
 function cleanPath(value) {
@@ -49,21 +58,19 @@ function configuredAccess() {
 }
 
 async function putBlob(pathname, body, contentType) {
-  const options = {
+  return put(pathname, body, {
     access: configuredAccess(),
     allowOverwrite: true,
     contentType,
     cacheControlMaxAge: 60,
-  };
-  return put(pathname, body, options);
+  });
 }
 
 async function getBlob(pathname, request) {
-  const result = await get(pathname, {
+  return get(pathname, {
     access: configuredAccess(),
-    ifNoneMatch: request.headers.get('if-none-match') || undefined,
+    ifNoneMatch: getHeader(request, 'if-none-match') || undefined,
   });
-  return result;
 }
 
 async function listAll(prefix) {
@@ -78,15 +85,9 @@ async function listAll(prefix) {
 }
 
 export default async function handler(request) {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(request) });
-  }
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(request) });
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return json(request, { error: 'BLOB_READ_WRITE_TOKEN não configurado no projeto Vercel.' }, 500);
-  }
-
-  const url = new URL(request.url);
+  const url = new URL(request.url || '/api/blob', 'https://sep-gemba.vercel.app');
   const action = url.searchParams.get('action') || 'status';
 
   try {
@@ -97,6 +98,7 @@ export default async function handler(request) {
         storage: 'Vercel Blob',
         access: configuredAccess(),
         objects: blobs.blobs.length,
+        authentication: process.env.BLOB_READ_WRITE_TOKEN ? 'token' : 'oidc',
       });
     }
 
@@ -146,21 +148,18 @@ export default async function handler(request) {
     }
 
     if (request.method === 'POST') {
-      const payload = await request.json();
-
+      const payload = await readJsonBody(request);
       if (action === 'put-json') {
         const pathname = cleanPath(payload.path);
         const blob = await putBlob(pathname, JSON.stringify(payload.data, null, 2), 'application/json; charset=utf-8');
         return json(request, { ok: true, blob });
       }
-
       if (action === 'put-base64') {
         const pathname = cleanPath(payload.path);
         const bytes = Buffer.from(String(payload.base64 || ''), 'base64');
         const blob = await putBlob(pathname, bytes, payload.contentType || contentTypeFromPath(pathname));
         return json(request, { ok: true, blob });
       }
-
       if (action === 'delete') {
         const pathname = cleanPath(payload.path);
         await del(pathname);
