@@ -30,7 +30,7 @@
         <button class="menu-button" id="menuButton" aria-label="Abrir menu">☰</button>
         <div><p class="eyebrow">Checklists com evidências</p><h1>Construtor Gemba</h1></div>
         <div class="topbar-actions">
-          <button class="button secondary" id="githubSettingsButton">Configurar GitHub</button>
+          <button class="button secondary" id="githubSettingsButton">Verificar GitHub</button>
           <button class="button primary" id="newTemplateButton">+ Novo modelo</button>
         </div>
       </header>
@@ -71,13 +71,13 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="githubSettingsTitle">
       <div class="modal-header"><div><span class="panel-kicker">Integração interna</span><h2 id="githubSettingsTitle">Configurar acesso ao GitHub</h2></div><button class="icon-button" data-close-modal="githubSettingsModal">×</button></div>
       <form id="githubSettingsForm">
-        <div class="field"><label for="githubToken">Token pessoal do GitHub *</label><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_... ou ghp_..." required><small class="github-token-help"><strong>Cole o valor completo do token.</strong> Não coloque o nome “SEP” e não use o Environment secret.</small></div>
+        <div class="field"><label for="githubToken">Token pessoal do GitHub *</label><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_... ou ghp_..." required><small class="github-token-help"><strong>Cole o valor completo do token.</strong> Este campo é usado somente no modo direto pelo navegador.</small></div>
         <div class="field"><label for="githubOwner">Proprietário</label><input id="githubOwner" value="aruanmf446-hub" required></div>
         <div class="field"><label for="githubRepo">Repositório</label><input id="githubRepo" value="SEP" required></div>
         <div class="field"><label for="githubBranch">Branch de dados</label><input id="githubBranch" value="dados" required></div>
-        <p class="form-note">O teste verificará a conta autenticada, o acesso ao repositório, a existência da branch e a gravação em Contents.</p>
+        <p class="form-note">O ambiente gembraa e o secret CHAVEY são validados pelo GitHub Actions sem expor a chave no navegador.</p>
         <div id="githubConnectionStatus" class="github-connection-status" hidden></div>
-        <div class="modal-actions"><button type="button" class="button ghost" id="clearGithubTokenButton">Remover chave</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="githubSettingsModal">Cancelar</button><button type="submit" class="button primary">Testar e salvar</button></div>
+        <div class="modal-actions"><button type="button" class="button ghost" id="clearGithubTokenButton">Remover chave local</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="githubSettingsModal">Cancelar</button><button type="submit" class="button primary">Testar modo direto</button></div>
       </form>
     </div>
   </div>
@@ -105,6 +105,7 @@
   <script src="./gemba-token-diagnostic.js?v=1" defer></script>
   <script src="./gemba-admin.js?v=1" defer></script>
   <script src="./gemba-inspector.js?v=1" defer></script>
+  <script src="./gemba-actions-bridge.js?v=1" defer></script>
   <script src="./gemba-init.js?v=2" defer></script>
 </body>
 </html>
