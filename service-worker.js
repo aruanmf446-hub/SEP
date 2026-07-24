@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sep-controle-v7';
+const CACHE_NAME = 'sep-controle-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const ASSETS = [
   './gemba-token-diagnostic.js',
   './gemba-admin.js',
   './gemba-inspector.js',
+  './gemba-actions-bridge.js',
   './gemba-init.js',
   './manifest.webmanifest'
 ];
