@@ -1,4 +1,5 @@
 import { get, list, put, del } from '@vercel/blob';
+import { getVercelOidcToken } from '@vercel/oidc';
 
 const ALLOWED_ORIGINS = new Set(['https://aruanmf446-hub.github.io']);
 const STORE_CONFIG_URL = 'https://raw.githubusercontent.com/aruanmf446-hub/SEP/dados/config/blob-store.json';
@@ -67,14 +68,24 @@ async function loadStoreConfig() {
   return config;
 }
 
+async function loadOidcToken() {
+  if (process.env.VERCEL_OIDC_TOKEN) return process.env.VERCEL_OIDC_TOKEN;
+  try {
+    return await getVercelOidcToken();
+  } catch (error) {
+    console.error('Falha ao obter OIDC da Vercel', error);
+    return '';
+  }
+}
+
 async function blobAuth() {
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     return { token: process.env.BLOB_READ_WRITE_TOKEN, mode: 'token' };
   }
 
-  const oidcToken = process.env.VERCEL_OIDC_TOKEN;
+  const oidcToken = await loadOidcToken();
   if (!oidcToken) {
-    throw new Error('A Vercel não forneceu VERCEL_OIDC_TOKEN para esta Function.');
+    throw new Error('A Vercel não forneceu um token OIDC para esta Function.');
   }
 
   const config = await loadStoreConfig();
