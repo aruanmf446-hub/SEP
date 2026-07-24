@@ -1,0 +1,35 @@
+.image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.image-actions .button {
+  min-height: 40px;
+  text-decoration: none;
+  justify-content: center;
+}
+
+.image-quality {
+  display: block;
+  margin-top: 7px;
+  color: #71819c;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.review-image img {
+  cursor: zoom-in;
+}
+
+@media (max-width: 640px) {
+  .image-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .image-actions .button {
+    width: 100%;
+  }
+}
