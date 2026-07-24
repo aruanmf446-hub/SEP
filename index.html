@@ -7,7 +7,8 @@
   <meta name="description" content="Controle interno de checklists, auditorias, pendências e certificações por filial.">
   <title>SEP | Controle de Certificações</title>
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=5">
+  <link rel="stylesheet" href="./app-v5.css?v=5">
 </head>
 <body>
   <div class="app-shell">
@@ -62,7 +63,7 @@
         <div class="data-grid">
           <article class="panel data-card"><span class="data-icon">↓</span><h2>Baixar backup</h2><p>Salve checklists, filiais, responsáveis e todo o andamento em um arquivo JSON.</p><button class="button primary" id="exportBackupButton">Baixar backup JSON</button></article>
           <article class="panel data-card"><span class="data-icon">↑</span><h2>Restaurar backup</h2><p>Importe um backup criado neste aplicativo. Os dados atuais serão substituídos.</p><label class="button secondary file-button">Selecionar arquivo<input id="importBackupInput" type="file" accept="application/json,.json"></label></article>
-          <article class="panel data-card"><span class="data-icon">CSV</span><h2>Exportar relatório</h2><p>Gere uma planilha com uma linha para cada filial de cada checklist.</p><button class="button secondary" id="exportCsvButton">Baixar relatório CSV</button></article>
+          <article class="panel data-card"><span class="data-icon">CSV</span><h2>Exportar relatório</h2><p>Gere uma planilha detalhada com uma linha para cada ação de cada filial.</p><button class="button secondary" id="exportCsvButton">Baixar relatório CSV</button></article>
           <article class="panel data-card danger-card"><span class="data-icon">!</span><h2>Limpar dados</h2><p>Apague os dados deste navegador e volte para a estrutura inicial.</p><button class="button danger" id="resetDataButton">Limpar e reiniciar</button></article>
         </div>
         <article class="panel storage-note"><h2>Como os dados funcionam</h2><p>Este projeto não usa banco de dados nem servidor. As informações ficam no armazenamento local do navegador.</p></article>
@@ -97,7 +98,7 @@
         </section>
         <section class="form-section execution-section hidden" id="executionSection">
           <div class="section-title"><div><span class="section-step">3</span><h3>Andamento por filial</h3></div><strong class="selection-count" id="selectedBranchCount">0 filiais</strong></div>
-          <p class="section-help">Cada filial tem status, progresso, responsável, prazo e pendências próprios.</p><div id="branchExecutionList" class="branch-execution-list"></div>
+          <p class="section-help">Expanda cada filial e crie ações separadas por área, departamento ou responsável. As ações concluídas recolhem automaticamente.</p><div id="branchExecutionList" class="branch-execution-list"></div>
         </section>
         <div class="modal-actions sticky-modal-actions"><button type="button" class="button ghost" id="deleteActivityButton" hidden>Excluir checklist</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="activityModal">Cancelar</button><button type="submit" class="button primary" id="saveChecklistButton">Cadastrar checklist</button></div>
       </form>
@@ -107,7 +108,8 @@
   <div class="modal-backdrop" id="branchModal" hidden><div class="modal"><div class="modal-header"><h2 id="branchModalTitle">Nova filial</h2><button class="icon-button" data-close-modal="branchModal">×</button></div><form id="branchForm"><input type="hidden" id="branchId"><div class="field"><label for="branchName">Nome da filial *</label><input id="branchName" required></div><div class="field"><label for="branchCode">Código / sigla</label><input id="branchCode"></div><div class="field"><label for="branchRegion">Região</label><input id="branchRegion"></div><div class="modal-actions"><button type="button" class="button ghost" id="deleteBranchButton" hidden>Excluir</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="branchModal">Cancelar</button><button type="submit" class="button primary">Salvar filial</button></div></form></div></div>
   <div class="modal-backdrop" id="personModal" hidden><div class="modal"><div class="modal-header"><h2 id="personModalTitle">Novo responsável</h2><button class="icon-button" data-close-modal="personModal">×</button></div><form id="personForm"><input type="hidden" id="personId"><div class="field"><label for="personName">Nome *</label><input id="personName" required></div><div class="field"><label for="personRole">Função / setor</label><input id="personRole"></div><div class="field"><label for="personContact">Contato</label><input id="personContact"></div><div class="modal-actions"><button type="button" class="button ghost" id="deletePersonButton" hidden>Excluir</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="personModal">Cancelar</button><button type="submit" class="button primary">Salvar responsável</button></div></form></div></div>
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
-  <script src="./app.js?v=4" defer></script>
-  <script src="./app-v4.js?v=4" defer></script>
+  <script src="./app.js?v=5" defer></script>
+  <script src="./app-v4.js?v=5" defer></script>
+  <script src="./app-v5.js?v=5" defer></script>
 </body>
 </html>
