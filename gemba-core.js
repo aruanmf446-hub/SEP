@@ -33,27 +33,65 @@ function saveConfig(next) {
 function headers(requireAuth = false) {
   const result = { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
   if (config.token) result.Authorization = `Bearer ${config.token}`;
-  if (requireAuth && !config.token) throw new Error('Informe a chave do GitHub para gravar os dados.');
+  if (requireAuth && !config.token) throw new Error('Informe o token pessoal do GitHub para gravar os dados.');
   return result;
 }
 function contentUrl(path, ref = config.branch) {
   return `${apiBase}/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(ref)}`;
 }
+function tokenLooksValid(token) {
+  const value = String(token || '').trim();
+  return (value.startsWith('github_pat_') || value.startsWith('ghp_')) && value.length > 30;
+}
 async function githubFetch(url, options = {}) {
-  const response = await fetch(url, options);
+  let response;
+  try {
+    response = await fetch(url, options);
+  } catch (error) {
+    throw new Error('Não foi possível acessar a API do GitHub. Verifique a internet e tente novamente.');
+  }
   if (response.ok) return response;
+
   let detail = '';
-  try { detail = (await response.json()).message || ''; } catch (_) { detail = await response.text(); }
-  if (response.status === 404) throw Object.assign(new Error('Arquivo não encontrado.'), { code: 404 });
-  if (response.status === 401 || response.status === 403) throw new Error('A chave do GitHub não tem permissão ou expirou.');
-  throw new Error(detail || `Erro GitHub ${response.status}`);
+  try {
+    const payload = await response.json();
+    detail = payload.message || '';
+  } catch (_) {
+    detail = await response.text();
+  }
+
+  const acceptedPermissions = response.headers.get('x-accepted-github-permissions') || '';
+  const oauthScopes = response.headers.get('x-oauth-scopes') || '';
+  const suffix = acceptedPermissions ? ` Permissão esperada pelo GitHub: ${acceptedPermissions}.` : '';
+  let message = detail || `Erro GitHub ${response.status}`;
+
+  if (response.status === 401) {
+    message = 'Token inválido. Cole o valor completo que começa com github_pat_ ou ghp_. O nome do secret “SEP” não é o token.';
+  } else if (response.status === 403) {
+    if (/rate limit/i.test(detail)) message = 'O limite temporário da API do GitHub foi atingido. Aguarde alguns minutos e tente novamente.';
+    else message = `O token foi reconhecido, mas o GitHub negou o acesso.${suffix} Confirme Contents: Read and write e o repositório SEP selecionado.`;
+  } else if (response.status === 404) {
+    message = 'O GitHub não encontrou o recurso. Confirme proprietário aruanmf446-hub, repositório SEP, branch dados e se o token tem acesso ao repositório.';
+  } else if (response.status === 422) {
+    message = `O GitHub recusou os dados enviados: ${detail || 'configuração inválida'}. Confirme a branch dados.`;
+  }
+
+  const error = Object.assign(new Error(message), {
+    status: response.status,
+    code: response.status,
+    detail,
+    acceptedPermissions,
+    oauthScopes,
+    url
+  });
+  throw error;
 }
 async function getContent(path, allowMissing = false) {
   try {
     const response = await githubFetch(contentUrl(path), { headers: headers(false), cache: 'no-store' });
     return response.json();
   } catch (error) {
-    if (allowMissing && error.code === 404) return null;
+    if (allowMissing && error.status === 404) return null;
     throw error;
   }
 }
@@ -74,12 +112,52 @@ async function putContent(path, base64Content, message) {
   const body = { message, content: base64Content, branch: config.branch };
   if (current?.sha) body.sha = current.sha;
   const response = await githubFetch(`${apiBase}/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${path.split('/').map(encodeURIComponent).join('/')}`, {
-    method: 'PUT', headers: { ...headers(true), 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    method: 'PUT',
+    headers: { ...headers(true), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
   return response.json();
 }
 async function putJson(path, data, message) {
   return putContent(path, encodeUtf8Base64(JSON.stringify(data, null, 2)), message);
+}
+async function testGithubConnection(candidateConfig, writeTest = true) {
+  const previousConfig = config;
+  const candidate = { ...DEFAULT_CONFIG, ...candidateConfig, token: String(candidateConfig?.token || '').trim() };
+
+  if (!tokenLooksValid(candidate.token)) {
+    throw new Error('Isso não parece ser um token pessoal. Cole o valor completo que começa com github_pat_ ou ghp_, e não o nome “SEP”.');
+  }
+
+  config = candidate;
+  try {
+    const userResponse = await githubFetch(`${apiBase}/user`, { headers: headers(true), cache: 'no-store' });
+    const user = await userResponse.json();
+
+    const repoResponse = await githubFetch(`${apiBase}/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}`, { headers: headers(true), cache: 'no-store' });
+    const repo = await repoResponse.json();
+
+    await githubFetch(`${apiBase}/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/branches/${encodeURIComponent(config.branch)}`, { headers: headers(true), cache: 'no-store' });
+
+    if (writeTest) {
+      await putJson('dados/conexao.json', {
+        app: 'SEP - Construtor Gemba',
+        authenticatedUser: user.login,
+        repository: repo.full_name,
+        branch: config.branch,
+        testedAt: nowIso()
+      }, 'Testar conexão do SEP com o GitHub');
+    }
+
+    return {
+      login: user.login,
+      repository: repo.full_name,
+      branch: config.branch,
+      canWrite: true
+    };
+  } finally {
+    config = previousConfig;
+  }
 }
 function rawUrl(path) {
   return `https://raw.githubusercontent.com/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/${encodeURIComponent(config.branch)}/${path.split('/').map(encodeURIComponent).join('/')}`;
@@ -100,7 +178,7 @@ function showToast(message, type = '') {
   toast.className = `toast ${type}`.trim();
   toast.textContent = message;
   $('toastContainer').appendChild(toast);
-  setTimeout(() => toast.remove(), 3200);
+  setTimeout(() => toast.remove(), 4200);
 }
 function openModal(id) { $(id).hidden = false; document.body.style.overflow = 'hidden'; }
 function closeModal(id) { $(id).hidden = true; document.body.style.overflow = ''; }
