@@ -2,6 +2,7 @@
 
 (function applyGembaAssignment() {
   let pendingAssignment = null;
+  let pendingBranch = '';
   const baseInitInspector = initInspector;
   const baseSubmitInspection = submitInspection;
 
@@ -22,6 +23,7 @@
 
   initInspector = async function initInspectorWithAssignment(params) {
     pendingAssignment = assignmentFromParams(params);
+    pendingBranch = params.get('filial') || '';
     await baseInitInspector(params);
     if (!inspectorState) return;
     inspectorState.assignment = pendingAssignment || inspectorState.oldSubmission?.assignment || null;
@@ -29,7 +31,8 @@
       id: inspectorState.assignment.controlId || '',
       title: inspectorState.assignment.controlTitle || ''
     } : inspectorState.oldSubmission?.sourceControl || null;
-    inspectorState.prefilledBranch = params.get('filial') || inspectorState.oldSubmission?.branch || '';
+    inspectorState.prefilledBranch = pendingBranch || inspectorState.oldSubmission?.branch || '';
+    renderInspectorIntro();
   };
 
   renderInspectorIntro = function renderAssignedInspectorIntro() {
@@ -41,7 +44,7 @@
     const assignedCard = assignment?.name ? `<div class="assigned-inspector"><span>Responsável pela inspeção</span><strong>${escapeHTML(assignment.name)}</strong>${assignedMeta ? `<small>${escapeHTML(assignedMeta)}</small>` : ''}</div>` : '';
     const controlReference = assignment?.controlTitle ? `<div class="inspection-reference"><span>Referência do controle</span><strong>${escapeHTML(assignment.controlTitle)}</strong></div>` : '';
 
-    $('inspectorContent').innerHTML = `<div class="inspector-card inspector-intro"><span class="gemba-type">${isRework ? 'Correção de pendências' : escapeHTML(model.type || 'interno')}</span><h1>${escapeHTML(model.title)}</h1><p>${escapeHTML(isRework ? 'Refaça somente os itens reprovados na avaliação anterior.' : model.description || 'Siga as orientações e registre as evidências solicitadas.')}</p>${assignedCard}${controlReference}<div class="inspector-meta"><span>${inspectorState.items.length} itens</span><span>${escapeHTML(model.area || 'Área não informada')}</span><span>Data automática</span></div><form id="inspectorIdentityForm"><div class="form-grid"><div class="field"><label>Seu nome *</label><input id="inspectorName" required value="${escapeHTML(assignedName)}" ${assignment?.name ? 'readonly' : ''}></div><div class="field"><label>Matrícula / identificação</label><input id="inspectorIdentifier" value="${escapeHTML(inspectorState.oldSubmission?.inspector?.identifier || '')}"></div><div class="field span-2"><label>Filial / unidade *</label><input id="inspectorBranch" required value="${escapeHTML(inspectorState.prefilledBranch || inspectorState.oldSubmission?.branch || '')}" placeholder="Ex.: Marituba"></div></div><div class="modal-actions"><div class="spacer"></div><button class="button primary" type="submit">Iniciar checklist</button></div></form></div>`;
+    $('inspectorContent').innerHTML = `<div class="inspector-card inspector-intro"><span class="gemba-type">${isRework ? 'Correção de pendências' : escapeHTML(model.type || 'interno')}</span><h1>${escapeHTML(model.title)}</h1><p>${escapeHTML(isRework ? 'Refaça somente os itens reprovados na avaliação anterior.' : model.description || 'Siga as orientações e registre as evidências solicitadas.')}</p>${assignedCard}${controlReference}<div class="inspector-meta"><span>${inspectorState.items.length} itens</span><span>${escapeHTML(model.area || 'Área não informada')}</span><span>Data automática</span></div><form id="inspectorIdentityForm"><div class="form-grid"><div class="field"><label>Seu nome *</label><input id="inspectorName" required value="${escapeHTML(assignedName)}" ${assignment?.name ? 'readonly' : ''}></div><div class="field"><label>Matrícula / identificação</label><input id="inspectorIdentifier" value="${escapeHTML(inspectorState.oldSubmission?.inspector?.identifier || '')}"></div><div class="field span-2"><label>Filial / unidade *</label><input id="inspectorBranch" required value="${escapeHTML(inspectorState.prefilledBranch || pendingBranch || inspectorState.oldSubmission?.branch || '')}" placeholder="Ex.: Marituba"></div></div><div class="modal-actions"><div class="spacer"></div><button class="button primary" type="submit">Iniciar checklist</button></div></form></div>`;
 
     $('inspectorIdentityForm').addEventListener('submit', event => {
       event.preventDefault();
