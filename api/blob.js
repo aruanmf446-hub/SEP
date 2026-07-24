@@ -1,6 +1,9 @@
 import { get, list, put, del } from '@vercel/blob';
 
 const ALLOWED_ORIGINS = new Set(['https://aruanmf446-hub.github.io']);
+const STORE_CONFIG_URL = 'https://raw.githubusercontent.com/aruanmf446-hub/SEP/dados/config/blob-store.json';
+let storeConfigCache = null;
+let storeConfigLoadedAt = 0;
 
 function corsHeaders(req) {
   const origin = req.headers?.origin || '';
@@ -48,8 +51,45 @@ function configuredAccess() {
   return process.env.BLOB_ACCESS === 'private' ? 'private' : 'public';
 }
 
+async function loadStoreConfig() {
+  const now = Date.now();
+  if (storeConfigCache && now - storeConfigLoadedAt < 300000) return storeConfigCache;
+
+  const response = await fetch(`${STORE_CONFIG_URL}?v=${now}`, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error('O workflow ainda não publicou o ID do Blob Store. Aguarde a Action “Publicar configuração do Blob Store” terminar.');
+  }
+  const config = await response.json();
+  if (!config?.storeId) throw new Error('O ID público do Blob Store não foi encontrado na configuração.');
+
+  storeConfigCache = config;
+  storeConfigLoadedAt = now;
+  return config;
+}
+
+async function blobAuth() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return { token: process.env.BLOB_READ_WRITE_TOKEN, mode: 'token' };
+  }
+
+  const oidcToken = process.env.VERCEL_OIDC_TOKEN;
+  if (!oidcToken) {
+    throw new Error('A Vercel não forneceu VERCEL_OIDC_TOKEN para esta Function.');
+  }
+
+  const config = await loadStoreConfig();
+  return { oidcToken, storeId: config.storeId, mode: 'oidc', storeIdPublic: config.storeId };
+}
+
+function sdkAuthOptions(auth) {
+  if (auth.token) return { token: auth.token };
+  return { oidcToken: auth.oidcToken, storeId: auth.storeId };
+}
+
 async function putBlob(pathname, body, contentType) {
+  const auth = await blobAuth();
   return put(pathname, body, {
+    ...sdkAuthOptions(auth),
     access: configuredAccess(),
     allowOverwrite: true,
     contentType,
@@ -58,17 +98,20 @@ async function putBlob(pathname, body, contentType) {
 }
 
 async function getBlob(pathname, req) {
+  const auth = await blobAuth();
   return get(pathname, {
+    ...sdkAuthOptions(auth),
     access: configuredAccess(),
     ifNoneMatch: req.headers?.['if-none-match'] || undefined,
   });
 }
 
 async function listAll(prefix) {
+  const auth = await blobAuth();
   const blobs = [];
   let cursor;
   do {
-    const page = await list({ prefix, limit: 1000, cursor });
+    const page = await list({ ...sdkAuthOptions(auth), prefix, limit: 1000, cursor });
     blobs.push(...page.blobs);
     cursor = page.hasMore ? page.cursor : undefined;
   } while (cursor);
@@ -88,13 +131,15 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET' && action === 'status') {
-      const blobs = await list({ prefix: 'sep/', limit: 1 });
+      const auth = await blobAuth();
+      const blobs = await list({ ...sdkAuthOptions(auth), prefix: 'sep/', limit: 1 });
       sendJson(req, res, {
         connected: true,
         storage: 'Vercel Blob',
         access: configuredAccess(),
         objects: blobs.blobs.length,
-        authentication: process.env.BLOB_READ_WRITE_TOKEN ? 'token' : 'oidc',
+        authentication: auth.mode,
+        storeId: auth.storeIdPublic || null,
       });
       return;
     }
@@ -176,7 +221,8 @@ export default async function handler(req, res) {
 
       if (action === 'delete') {
         const pathname = cleanPath(payload.path);
-        await del(pathname);
+        const auth = await blobAuth();
+        await del(pathname, sdkAuthOptions(auth));
         sendJson(req, res, { ok: true });
         return;
       }
