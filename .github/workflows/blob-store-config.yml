@@ -1,0 +1,66 @@
+name: Publicar configuração do Blob Store
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.github/workflows/blob-store-config.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publicar_store_id:
+    runs-on: ubuntu-latest
+    environment:
+      name: gembraa
+    steps:
+      - name: Extrair apenas o ID público do Blob Store
+        env:
+          BLOB_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${BLOB_TOKEN:-}" ]; then
+            echo "::error::BLOB_READ_WRITE_TOKEN não encontrado no ambiente gembraa."
+            exit 1
+          fi
+
+          case "$BLOB_TOKEN" in
+            vercel_blob_rw_*) ;;
+            *)
+              echo "::error::O secret não parece ser um token Vercel Blob válido."
+              exit 1
+              ;;
+          esac
+
+          STORE_ID="${BLOB_TOKEN#vercel_blob_rw_}"
+          STORE_ID="${STORE_ID%%_*}"
+
+          if [ -z "$STORE_ID" ]; then
+            echo "::error::Não foi possível extrair o ID do Blob Store."
+            exit 1
+          fi
+
+          GENERATED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          JSON="$(printf '{\n  \"storeId\": \"%s\",\n  \"source\": \"gembraa/BLOB_READ_WRITE_TOKEN\",\n  \"generatedAt\": \"%s\"\n}\n' "$STORE_ID" "$GENERATED_AT")"
+          CONTENT="$(printf '%s' "$JSON" | base64 -w0)"
+          API_PATH="repos/${GITHUB_REPOSITORY}/contents/config/blob-store.json"
+          CURRENT_SHA="$(gh api "${API_PATH}?ref=dados" --jq .sha 2>/dev/null || true)"
+
+          if [ -n "$CURRENT_SHA" ]; then
+            gh api --method PUT "$API_PATH" \
+              -f message='Atualizar ID público do Blob Store' \
+              -f content="$CONTENT" \
+              -f branch='dados' \
+              -f sha="$CURRENT_SHA" >/dev/null
+          else
+            gh api --method PUT "$API_PATH" \
+              -f message='Publicar ID público do Blob Store' \
+              -f content="$CONTENT" \
+              -f branch='dados' >/dev/null
+          fi
+
+          echo "ID público do Blob Store publicado na branch dados."
