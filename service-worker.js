@@ -1,22 +1,27 @@
-const CACHE_NAME = 'sep-controle-v10';
+const CACHE_NAME = 'sep-controle-v11';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app-v4.css',
   './app-v5.css',
+  './app-v6.css',
   './app-v5-preload.js',
   './app.js',
   './app-v4.js',
   './app-v5.js',
   './app-v5-compat.js',
+  './app-v6.js',
   './gemba.html',
   './gemba-blob.html',
   './gemba.css',
+  './gemba-original-download.css',
+  './gemba-assignment.css',
   './gemba-core.js',
   './gemba-admin.js',
   './gemba-inspector.js',
   './gemba-blob-overrides.js',
+  './gemba-assignment.js',
   './gemba-init.js',
   './manifest.webmanifest'
 ];
