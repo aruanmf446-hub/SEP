@@ -2,13 +2,8 @@ import { get, list, put, del } from '@vercel/blob';
 
 const ALLOWED_ORIGINS = new Set(['https://aruanmf446-hub.github.io']);
 
-function getHeader(request, name) {
-  if (request.headers?.get) return request.headers.get(name);
-  return request.headers?.[name.toLowerCase()] || request.headers?.[name] || '';
-}
-
-function corsHeaders(request) {
-  const origin = getHeader(request, 'origin') || '';
+function corsHeaders(req) {
+  const origin = req.headers?.origin || '';
   const allowOrigin = origin.endsWith('.vercel.app') || ALLOWED_ORIGINS.has(origin) ? origin : '*';
   return {
     'Access-Control-Allow-Origin': allowOrigin,
@@ -19,22 +14,18 @@ function corsHeaders(request) {
   };
 }
 
-function json(request, body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      ...corsHeaders(request),
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store',
-    },
-  });
+function sendJson(req, res, body, status = 200) {
+  res.statusCode = status;
+  for (const [key, value] of Object.entries(corsHeaders(req))) res.setHeader(key, value);
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(body));
 }
 
-async function readJsonBody(request) {
-  if (typeof request.json === 'function') return request.json();
-  if (request.body && typeof request.body === 'object' && !Buffer.isBuffer(request.body)) return request.body;
+async function readJsonBody(req) {
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return req.body;
   const chunks = [];
-  for await (const chunk of request) chunks.push(Buffer.from(chunk));
+  for await (const chunk of req) chunks.push(Buffer.from(chunk));
   const text = Buffer.concat(chunks).toString('utf8');
   return text ? JSON.parse(text) : {};
 }
@@ -66,10 +57,10 @@ async function putBlob(pathname, body, contentType) {
   });
 }
 
-async function getBlob(pathname, request) {
+async function getBlob(pathname, req) {
   return get(pathname, {
     access: configuredAccess(),
-    ifNoneMatch: getHeader(request, 'if-none-match') || undefined,
+    ifNoneMatch: req.headers?.['if-none-match'] || undefined,
   });
 }
 
@@ -84,28 +75,34 @@ async function listAll(prefix) {
   return blobs;
 }
 
-export default async function handler(request) {
-  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(request) });
+export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    for (const [key, value] of Object.entries(corsHeaders(req))) res.setHeader(key, value);
+    res.end();
+    return;
+  }
 
-  const url = new URL(request.url || '/api/blob', 'https://sep-gemba.vercel.app');
+  const url = new URL(req.url || '/api/blob', 'https://sep-gemba.vercel.app');
   const action = url.searchParams.get('action') || 'status';
 
   try {
-    if (request.method === 'GET' && action === 'status') {
+    if (req.method === 'GET' && action === 'status') {
       const blobs = await list({ prefix: 'sep/', limit: 1 });
-      return json(request, {
+      sendJson(req, res, {
         connected: true,
         storage: 'Vercel Blob',
         access: configuredAccess(),
         objects: blobs.blobs.length,
         authentication: process.env.BLOB_READ_WRITE_TOKEN ? 'token' : 'oidc',
       });
+      return;
     }
 
-    if (request.method === 'GET' && action === 'list') {
+    if (req.method === 'GET' && action === 'list') {
       const prefix = cleanPath(url.searchParams.get('prefix') || 'sep/');
       const blobs = await listAll(prefix);
-      return json(request, {
+      sendJson(req, res, {
         blobs: blobs.map(blob => ({
           pathname: blob.pathname,
           url: blob.url,
@@ -115,61 +112,79 @@ export default async function handler(request) {
           contentType: blob.contentType,
         })),
       });
+      return;
     }
 
-    if (request.method === 'GET' && action === 'get') {
+    if (req.method === 'GET' && action === 'get') {
       const pathname = cleanPath(url.searchParams.get('path'));
-      const result = await getBlob(pathname, request);
-      if (!result || result.statusCode === 404) return json(request, { error: 'Arquivo não encontrado.' }, 404);
-      if (result.statusCode === 304) return new Response(null, { status: 304, headers: corsHeaders(request) });
-      const text = await new Response(result.stream).text();
-      return json(request, { pathname, text, etag: result.blob.etag });
-    }
-
-    if (request.method === 'GET' && action === 'file') {
-      const pathname = cleanPath(url.searchParams.get('path'));
-      const result = await getBlob(pathname, request);
-      if (!result || result.statusCode === 404) return new Response('Arquivo não encontrado.', { status: 404, headers: corsHeaders(request) });
-      if (result.statusCode === 304) {
-        return new Response(null, {
-          status: 304,
-          headers: { ...corsHeaders(request), ETag: result.blob.etag, 'Cache-Control': 'private, no-cache' },
-        });
+      const result = await getBlob(pathname, req);
+      if (!result || result.statusCode === 404) {
+        sendJson(req, res, { error: 'Arquivo não encontrado.' }, 404);
+        return;
       }
-      return new Response(result.stream, {
-        headers: {
-          ...corsHeaders(request),
-          'Content-Type': result.blob.contentType || contentTypeFromPath(pathname),
-          'X-Content-Type-Options': 'nosniff',
-          ETag: result.blob.etag,
-          'Cache-Control': 'private, no-cache',
-        },
-      });
+      if (result.statusCode === 304) {
+        res.statusCode = 304;
+        res.end();
+        return;
+      }
+      const text = await new Response(result.stream).text();
+      sendJson(req, res, { pathname, text, etag: result.blob.etag });
+      return;
     }
 
-    if (request.method === 'POST') {
-      const payload = await readJsonBody(request);
+    if (req.method === 'GET' && action === 'file') {
+      const pathname = cleanPath(url.searchParams.get('path'));
+      const result = await getBlob(pathname, req);
+      if (!result || result.statusCode === 404) {
+        res.statusCode = 404;
+        res.end('Arquivo não encontrado.');
+        return;
+      }
+      if (result.statusCode === 304) {
+        res.statusCode = 304;
+        res.end();
+        return;
+      }
+      const buffer = Buffer.from(await new Response(result.stream).arrayBuffer());
+      res.statusCode = 200;
+      for (const [key, value] of Object.entries(corsHeaders(req))) res.setHeader(key, value);
+      res.setHeader('Content-Type', result.blob.contentType || contentTypeFromPath(pathname));
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('ETag', result.blob.etag);
+      res.setHeader('Cache-Control', 'private, no-cache');
+      res.end(buffer);
+      return;
+    }
+
+    if (req.method === 'POST') {
+      const payload = await readJsonBody(req);
+
       if (action === 'put-json') {
         const pathname = cleanPath(payload.path);
         const blob = await putBlob(pathname, JSON.stringify(payload.data, null, 2), 'application/json; charset=utf-8');
-        return json(request, { ok: true, blob });
+        sendJson(req, res, { ok: true, blob });
+        return;
       }
+
       if (action === 'put-base64') {
         const pathname = cleanPath(payload.path);
         const bytes = Buffer.from(String(payload.base64 || ''), 'base64');
         const blob = await putBlob(pathname, bytes, payload.contentType || contentTypeFromPath(pathname));
-        return json(request, { ok: true, blob });
+        sendJson(req, res, { ok: true, blob });
+        return;
       }
+
       if (action === 'delete') {
         const pathname = cleanPath(payload.path);
         await del(pathname);
-        return json(request, { ok: true });
+        sendJson(req, res, { ok: true });
+        return;
       }
     }
 
-    return json(request, { error: 'Operação não suportada.' }, 405);
+    sendJson(req, res, { error: 'Operação não suportada.' }, 405);
   } catch (error) {
     console.error('SEP Blob API error', error);
-    return json(request, { error: error instanceof Error ? error.message : 'Falha no Vercel Blob.' }, 500);
+    sendJson(req, res, { error: error instanceof Error ? error.message : 'Falha no Vercel Blob.' }, 500);
   }
 }
