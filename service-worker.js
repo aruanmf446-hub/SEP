@@ -1,13 +1,15 @@
-const CACHE_NAME = 'sep-controle-v9';
+const CACHE_NAME = 'sep-controle-v10';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app-v4.css',
   './app-v5.css',
+  './app-v5-preload.js',
   './app.js',
   './app-v4.js',
   './app-v5.js',
+  './app-v5-compat.js',
   './gemba.html',
   './gemba-blob.html',
   './gemba.css',
