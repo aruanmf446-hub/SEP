@@ -9,15 +9,15 @@
   <meta name="theme-color" content="#0b1736">
   <meta name="description" content="Construtor, preenchimento e avaliação de checklists Gemba com fotos.">
   <title>SEP | Checklists Gemba</title>
-  <link rel="stylesheet" href="./styles.css?v=gemba-v10b">
-  <link rel="stylesheet" href="./gemba.css?v=gemba-v10b">
-  <link rel="stylesheet" href="./gemba-diagnostics.css?v=gemba-v10b">
+  <link rel="stylesheet" href="./styles.css?v=gemba-v11">
+  <link rel="stylesheet" href="./gemba.css?v=gemba-v11">
+  <link rel="stylesheet" href="./gemba-diagnostics.css?v=gemba-v11">
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(items => items.forEach(item => item.unregister()));
     if ('caches' in window) caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
-    if (!sessionStorage.getItem('sep-gemba-v10b-cleaned')) {
+    if (!sessionStorage.getItem('sep-gemba-v11-cleaned')) {
       localStorage.removeItem('sep-gemba-github-config-v1');
-      sessionStorage.setItem('sep-gemba-v10b-cleaned', '1');
+      sessionStorage.setItem('sep-gemba-v11-cleaned', '1');
     }
   </script>
 </head>
@@ -81,13 +81,13 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="githubSettingsTitle">
       <div class="modal-header"><div><span class="panel-kicker">Integração interna</span><h2 id="githubSettingsTitle">Configurar gravação direta</h2></div><button class="icon-button" data-close-modal="githubSettingsModal">×</button></div>
       <form id="githubSettingsForm">
-        <div class="field"><label for="githubToken">Token pessoal do GitHub *</label><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_... ou ghp_..." required><small class="github-token-help"><strong>Cole o token completo.</strong> Esta versão cria um arquivo novo diretamente na branch dados e não executa o diagnóstico antigo.</small></div>
+        <div class="field"><label for="githubToken">Token pessoal do GitHub *</label><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_... ou ghp_..." required><small class="github-token-help"><strong>Cole o token completo.</strong> O sistema confirmará se ele é exatamente o mesmo token salvo em gembraa &gt; CHAVEY antes de tentar gravar.</small></div>
         <div class="field"><label for="githubOwner">Proprietário</label><input id="githubOwner" value="aruanmf446-hub" required></div>
         <div class="field"><label for="githubRepo">Repositório</label><input id="githubRepo" value="SEP" required></div>
         <div class="field"><label for="githubBranch">Branch de dados</label><input id="githubBranch" value="dados" required></div>
-        <p class="form-note">O secret CHAVEY já foi validado no ambiente gembraa. Este campo serve somente para permitir as gravações feitas pelo navegador.</p>
+        <p class="form-note">A comparação usa somente uma impressão digital SHA-256; o valor do CHAVEY continua secreto no GitHub Actions.</p>
         <div id="githubConnectionStatus" class="github-connection-status" hidden></div>
-        <div class="modal-actions"><button type="button" class="button ghost" id="clearGithubTokenButton">Remover chave local</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="githubSettingsModal">Cancelar</button><button type="submit" class="button primary">Testar gravação direta</button></div>
+        <div class="modal-actions"><button type="button" class="button ghost" id="clearGithubTokenButton">Remover chave local</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="githubSettingsModal">Cancelar</button><button type="submit" class="button primary">Comparar e testar gravação</button></div>
       </form>
     </div>
   </div>
@@ -111,11 +111,11 @@
   </div>
 
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
-  <script src="./gemba-core.js?v=gemba-v10b" defer></script>
-  <script src="./gemba-error-fix-v10.js?v=gemba-v10b" defer></script>
-  <script src="./gemba-admin.js?v=gemba-v10b" defer></script>
-  <script src="./gemba-inspector.js?v=gemba-v10b" defer></script>
-  <script src="./gemba-direct-write-v2.js?v=gemba-v10b" defer></script>
-  <script src="./gemba-init.js?v=gemba-v10b" defer></script>
+  <script src="./gemba-core.js?v=gemba-v11" defer></script>
+  <script src="./gemba-error-fix-v10.js?v=gemba-v11" defer></script>
+  <script src="./gemba-admin.js?v=gemba-v11" defer></script>
+  <script src="./gemba-inspector.js?v=gemba-v11" defer></script>
+  <script src="./gemba-direct-write-v2.js?v=gemba-v11" defer></script>
+  <script src="./gemba-init.js?v=gemba-v11" defer></script>
 </body>
 </html>
