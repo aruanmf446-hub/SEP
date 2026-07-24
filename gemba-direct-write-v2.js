@@ -14,8 +14,7 @@ async function readChaveyStatus() {
   return response.json();
 }
 
-// Confirma que o token colado é o CHAVEY e testa os dois esquemas de autenticação aceitos pelo GitHub.
-testGithubConnection = async function testGithubConnectionDirectV4(candidateConfig) {
+testGithubConnection = async function testGithubConnectionDirectV13(candidateConfig) {
   const previousConfig = config;
   const candidate = {
     ...DEFAULT_CONFIG,
@@ -36,21 +35,23 @@ testGithubConnection = async function testGithubConnectionDirectV4(candidateConf
     throw new Error('O token colado no navegador não é o mesmo token armazenado em Environments > gembraa > CHAVEY.');
   }
 
-  config = candidate;
-  const testId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const path = `dados/testes-browser/conexao-${testId}.json`;
-  const apiUrl = `${apiBase}/repos/aruanmf446-hub/SEP/contents/${path}`;
-  const payload = {
-    app: 'SEP - Construtor Gemba',
-    source: 'navegador',
-    authenticatedUser: status.authenticatedUser,
-    repository: 'aruanmf446-hub/SEP',
-    branch: 'dados',
-    matchedChavey: true,
-    testedAt: nowIso()
-  };
-
+  config = { ...candidate, login: status.authenticatedUser || 'aruanmf446-hub' };
   try {
+    const auth = await window.SEP_SELECT_AUTH_MODE(true);
+    const testId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const path = `dados/testes-browser/conexao-${testId}.json`;
+    const apiUrl = `${apiBase}/repos/aruanmf446-hub/SEP/contents/${path}`;
+    const payload = {
+      app: 'SEP - Construtor Gemba',
+      source: 'navegador',
+      authenticatedUser: auth.login || status.authenticatedUser,
+      authenticationMode: auth.mode,
+      repository: 'aruanmf446-hub/SEP',
+      branch: 'dados',
+      matchedChavey: true,
+      testedAt: nowIso()
+    };
+
     const response = await window.SEP_AUTHENTICATED_FETCH(apiUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -63,10 +64,11 @@ testGithubConnection = async function testGithubConnectionDirectV4(candidateConf
 
     const result = await response.json();
     return {
-      login: status.authenticatedUser,
+      login: auth.login || status.authenticatedUser,
       repository: 'aruanmf446-hub/SEP',
       branch: 'dados',
       canWrite: true,
+      authMode: auth.mode,
       path,
       commit: result?.commit?.sha || ''
     };
