@@ -1,0 +1,66 @@
+/* Andamento detalhado por filial e ações — v5 */
+.branch-execution-list{display:grid;gap:16px}
+.branch-execution-card.branch-accordion{padding:0;overflow:hidden;border:1px solid var(--slate-200);border-radius:18px;background:#fff;box-shadow:0 12px 30px rgba(29,44,76,.055)}
+.branch-accordion-summary{list-style:none;cursor:pointer;padding:17px 20px;display:grid;grid-template-columns:minmax(220px,1fr) minmax(210px,.72fr) auto 24px;align-items:center;gap:18px;background:#fff;transition:.18s ease}
+.branch-accordion-summary::-webkit-details-marker,.branch-action-summary::-webkit-details-marker,.branch-overview>summary::-webkit-details-marker{display:none}
+.branch-accordion-summary:hover{background:#fbfcff}
+.branch-accordion[open]>.branch-accordion-summary{border-bottom:1px solid var(--slate-200)}
+.branch-accordion.all-completed>.branch-accordion-summary{background:#f7fbf9}
+.branch-accordion-body{padding:18px;background:#fbfcfe}
+.branch-summary-progress{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:10px;row-gap:5px;min-width:0}
+.branch-summary-progress span{grid-column:1/-1;color:var(--slate-500);font-size:10px;font-weight:700}
+.branch-summary-progress strong{font-size:11px;color:var(--slate-700)}
+.branch-mini-progress{height:7px;border-radius:999px;background:var(--slate-200);overflow:hidden}
+.branch-mini-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--blue-600),#6e96ff);transition:width .25s ease}
+.accordion-chevron{display:grid;place-items:center;color:var(--slate-500);font-size:20px;transition:transform .18s ease}
+details[open]>summary>.accordion-chevron{transform:rotate(180deg)}
+.branch-overview{border:1px solid var(--slate-200);border-radius:14px;background:#fff;margin-bottom:16px;overflow:hidden}
+.branch-overview>summary{list-style:none;cursor:pointer;padding:13px 15px;color:var(--blue-600);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:space-between}
+.branch-overview>summary:after{content:'⌄';font-size:17px;color:var(--slate-500);transition:.18s}
+.branch-overview[open]>summary:after{transform:rotate(180deg)}
+.branch-overview[open]>summary{border-bottom:1px solid var(--slate-200)}
+.branch-overview-body{padding:16px}
+.branch-general-grid:empty{display:none}
+.branch-calculated-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:15px}
+.branch-calculated-summary>div{padding:12px 13px;border:1px solid var(--slate-200);border-radius:11px;background:var(--slate-100)}
+.branch-calculated-summary span,.branch-calculated-summary strong{display:block}
+.branch-calculated-summary span{color:var(--slate-500);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+.branch-calculated-summary strong{margin-top:4px;font-size:14px}
+.branch-actions-section{border:1px solid var(--slate-200);border-radius:15px;background:#fff;padding:16px}
+.branch-actions-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:14px}
+.branch-actions-heading h4{margin:3px 0 2px;font-size:15px}
+.branch-actions-heading p{margin:0;color:var(--slate-500);font-size:11px}
+.compact-action-button{min-height:36px;padding:7px 11px;font-size:11px;white-space:nowrap}
+.branch-action-list{display:grid;gap:10px}
+.branch-action-card{border:1px solid var(--slate-200);border-radius:13px;background:#fff;overflow:hidden;transition:.18s ease}
+.branch-action-card[open]{border-color:#c9d5e9;box-shadow:0 9px 22px rgba(29,44,76,.055)}
+.branch-action-card.completed{background:#f7fbf9;border-color:#d8ebe2;opacity:.9}
+.branch-action-summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:32px minmax(180px,1fr) 54px auto 22px;align-items:center;gap:11px;padding:12px 13px}
+.branch-action-summary:hover{background:#fbfcfe}
+.branch-action-card.completed .branch-action-summary:hover{background:#f2f8f5}
+.action-check-wrap{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:var(--slate-100)}
+.action-check-wrap input{width:17px;height:17px;margin:0;accent-color:var(--green-500);cursor:pointer}
+.action-summary-main{min-width:0}
+.action-summary-main strong,.action-summary-main small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.action-summary-main strong{font-size:13px}
+.action-summary-main small{margin-top:2px;color:var(--slate-500);font-size:10px}
+.branch-action-card.completed .action-summary-main strong{text-decoration:line-through;color:var(--slate-500)}
+.action-progress-compact{color:var(--slate-700);font-size:11px;font-weight:800;text-align:right}
+.action-status-dot{justify-self:end}
+.branch-action-body{padding:15px;border-top:1px solid var(--slate-200);background:#fff}
+.branch-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.branch-action-grid .span-2{grid-column:1/-1}
+.action-detail-notes{border:1px solid var(--slate-200);border-radius:11px;overflow:hidden;margin-top:2px}
+.action-detail-notes>summary{cursor:pointer;list-style:none;padding:11px 12px;color:var(--blue-600);font-size:11px;font-weight:800;background:#fbfcfe}
+.action-detail-notes>summary::-webkit-details-marker{display:none}
+.action-detail-notes[open]>summary{border-bottom:1px solid var(--slate-200)}
+.action-detail-notes .branch-detail-grid{padding:13px}
+.action-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:11px;border-top:1px solid var(--slate-200)}
+.action-footer span{color:var(--slate-500);font-size:9px}
+.action-delete{color:var(--red-500);font-size:10px}
+.action-empty-state{padding:24px;border:1px dashed var(--slate-300);border-radius:12px;background:#fbfcfe;text-align:center}
+.action-empty-state strong,.action-empty-state span{display:block}
+.action-empty-state strong{font-size:13px}
+.action-empty-state span{max-width:560px;margin:4px auto 13px;color:var(--slate-500);font-size:11px}
+@media (max-width:900px){.branch-accordion-summary{grid-template-columns:1fr auto 22px}.branch-summary-progress{grid-column:1/-1;grid-row:2}.branch-accordion-summary>.branch-status-dot{grid-column:2;grid-row:1}.branch-accordion-summary>.accordion-chevron{grid-column:3;grid-row:1}.branch-calculated-summary{grid-template-columns:1fr}}
+@media (max-width:700px){.branch-accordion-body{padding:11px}.branch-actions-section{padding:12px}.branch-actions-heading{display:grid}.branch-actions-heading .button{width:100%}.branch-action-summary{grid-template-columns:30px minmax(0,1fr) 21px}.action-progress-compact,.action-status-dot{grid-row:2}.action-progress-compact{grid-column:2;text-align:left}.action-status-dot{grid-column:2;justify-self:end}.branch-action-grid{grid-template-columns:1fr}.branch-action-grid .span-2{grid-column:auto}}
