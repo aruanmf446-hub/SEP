@@ -1,0 +1,10 @@
+.assigned-inspector,.inspection-reference{margin:18px 0 0;padding:14px 16px;border:1px solid #dce5fb;border-radius:13px;background:#f7f9ff}
+.assigned-inspector span,.assigned-inspector strong,.assigned-inspector small,.inspection-reference span,.inspection-reference strong{display:block}
+.assigned-inspector span,.inspection-reference span{color:#6f7e96;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.assigned-inspector strong,.inspection-reference strong{margin-top:3px;color:#14224a;font-size:15px}
+.assigned-inspector small{margin-top:2px;color:#7c899d;font-size:11px}
+.inspection-reference{margin-top:9px;background:#fff}
+#inspectorName[readonly]{background:#f1f4f9;color:#4d5b70;cursor:not-allowed}
+.inspector-finished{min-height:320px;display:grid;place-items:center;text-align:center}
+.inspector-finished h1{margin:0;font-size:clamp(28px,7vw,46px);letter-spacing:-.04em}
+@media(max-width:640px){.assigned-inspector,.inspection-reference{padding:13px}.inspector-finished{min-height:55vh}}
