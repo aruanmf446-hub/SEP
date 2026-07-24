@@ -1,0 +1,33 @@
+.gemba-association-section{background:#f8faff}
+.gemba-association-grid{align-items:start}
+.gemba-link-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px;border:1px solid var(--slate-300);border-radius:14px;background:#fff;transition:.18s ease}
+.gemba-link-panel.ready{border-color:#a9bdf8;box-shadow:0 0 0 3px rgba(46,101,243,.07)}
+.gemba-link-copy{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.gemba-link-copy span{color:var(--slate-500);font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:.06em}
+.gemba-link-copy strong{font-size:12px;color:var(--slate-700);text-align:right}
+.gemba-link-panel.ready .gemba-link-copy strong{color:var(--green-500)}
+.gemba-link-panel input{min-width:0;margin:0;background:var(--slate-100);color:var(--slate-700);font-size:12px}
+.gemba-link-actions{display:flex;gap:8px}
+.gemba-link-actions .button{min-height:40px;padding:8px 13px}
+.gemba-card-association{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:10px;margin-top:13px;padding:11px;border:1px solid #dce5fb;border-radius:12px;background:#f7f9ff}
+.gemba-card-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:10px;background:var(--navy-900);color:#fff;font-size:14px;font-weight:850}
+.gemba-card-info{min-width:0}
+.gemba-card-info span,.gemba-card-info strong,.gemba-card-info small{display:block}
+.gemba-card-info span{color:var(--blue-600);font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+.gemba-card-info strong{margin-top:2px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gemba-card-info small{margin-top:2px;color:var(--slate-500);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gemba-card-buttons{display:flex;align-items:center;gap:3px}
+.gemba-card-buttons .text-button{font-size:10px;padding:5px}
+@media(max-width:720px){
+  .gemba-link-panel{grid-template-columns:1fr}
+  .gemba-link-copy{display:grid;gap:4px}
+  .gemba-link-copy strong{text-align:left}
+  .gemba-link-actions{width:100%}
+  .gemba-link-actions .button{flex:1}
+  .gemba-card-association{grid-template-columns:38px minmax(0,1fr)}
+  .gemba-card-buttons{grid-column:1/-1;justify-content:flex-end;border-top:1px solid #e3e9f8;padding-top:7px}
+}
+@media(max-width:480px){
+  .gemba-link-actions{display:grid;grid-template-columns:1fr 1fr}
+  .gemba-card-info strong,.gemba-card-info small{white-space:normal}
+}
