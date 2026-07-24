@@ -65,6 +65,18 @@ jobs:
     steps:
       - name: Baixar repositório
         uses: actions/checkout@v4
+      - name: Validar JavaScript do controle e Gemba
+        run: |
+          node --check app-v4.js
+          node --check app-v5.js
+          node --check app-v5-compat.js
+          node --check app-v6.js
+          node --check gemba-core.js
+          node --check gemba-admin.js
+          node --check gemba-inspector.js
+          node --check gemba-blob-overrides.js
+          node --check gemba-assignment.js
+          node --check gemba-init.js
       - name: Configurar Pages
         uses: actions/configure-pages@v5
       - name: Preparar arquivos estáticos
