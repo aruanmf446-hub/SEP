@@ -108,8 +108,10 @@
   <div class="modal-backdrop" id="branchModal" hidden><div class="modal"><div class="modal-header"><h2 id="branchModalTitle">Nova filial</h2><button class="icon-button" data-close-modal="branchModal">×</button></div><form id="branchForm"><input type="hidden" id="branchId"><div class="field"><label for="branchName">Nome da filial *</label><input id="branchName" required></div><div class="field"><label for="branchCode">Código / sigla</label><input id="branchCode"></div><div class="field"><label for="branchRegion">Região</label><input id="branchRegion"></div><div class="modal-actions"><button type="button" class="button ghost" id="deleteBranchButton" hidden>Excluir</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="branchModal">Cancelar</button><button type="submit" class="button primary">Salvar filial</button></div></form></div></div>
   <div class="modal-backdrop" id="personModal" hidden><div class="modal"><div class="modal-header"><h2 id="personModalTitle">Novo responsável</h2><button class="icon-button" data-close-modal="personModal">×</button></div><form id="personForm"><input type="hidden" id="personId"><div class="field"><label for="personName">Nome *</label><input id="personName" required></div><div class="field"><label for="personRole">Função / setor</label><input id="personRole"></div><div class="field"><label for="personContact">Contato</label><input id="personContact"></div><div class="modal-actions"><button type="button" class="button ghost" id="deletePersonButton" hidden>Excluir</button><div class="spacer"></div><button type="button" class="button secondary" data-close-modal="personModal">Cancelar</button><button type="submit" class="button primary">Salvar responsável</button></div></form></div></div>
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+  <script src="./app-v5-preload.js?v=5" defer></script>
   <script src="./app.js?v=5" defer></script>
   <script src="./app-v4.js?v=5" defer></script>
   <script src="./app-v5.js?v=5" defer></script>
+  <script src="./app-v5-compat.js?v=5" defer></script>
 </body>
 </html>
