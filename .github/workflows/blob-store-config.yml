@@ -16,7 +16,10 @@ jobs:
     environment:
       name: gembraa
     steps:
-      - name: Extrair apenas o ID público do Blob Store
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Criptografar configuração do Blob Store
         env:
           BLOB_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           GH_TOKEN: ${{ github.token }}
@@ -39,28 +42,35 @@ jobs:
           STORE_ID="${BLOB_TOKEN#vercel_blob_rw_}"
           STORE_ID="${STORE_ID%%_*}"
 
-          if [ -z "$STORE_ID" ]; then
-            echo "::error::Não foi possível extrair o ID do Blob Store."
-            exit 1
-          fi
+          printf '%s' "$BLOB_TOKEN" > /tmp/blob-token.txt
+          openssl pkeyutl -encrypt \
+            -pubin \
+            -inkey .github/blob-token-public.pem \
+            -in /tmp/blob-token.txt \
+            -out /tmp/blob-token.enc \
+            -pkeyopt rsa_padding_mode:oaep \
+            -pkeyopt rsa_oaep_md:sha256 \
+            -pkeyopt rsa_mgf1_md:sha256
 
+          ENCRYPTED_TOKEN="$(base64 -w0 /tmp/blob-token.enc)"
           GENERATED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          JSON="$(printf '{\n  \"storeId\": \"%s\",\n  \"source\": \"gembraa/BLOB_READ_WRITE_TOKEN\",\n  \"generatedAt\": \"%s\"\n}\n' "$STORE_ID" "$GENERATED_AT")"
+          JSON="$(printf '{\n  \"storeId\": \"%s\",\n  \"encryptedToken\": \"%s\",\n  \"encryption\": \"RSA-OAEP-SHA256\",\n  \"source\": \"gembraa/BLOB_READ_WRITE_TOKEN\",\n  \"generatedAt\": \"%s\"\n}\n' "$STORE_ID" "$ENCRYPTED_TOKEN" "$GENERATED_AT")"
           CONTENT="$(printf '%s' "$JSON" | base64 -w0)"
           API_PATH="repos/${GITHUB_REPOSITORY}/contents/config/blob-store.json"
           CURRENT_SHA="$(gh api "${API_PATH}?ref=dados" --jq .sha 2>/dev/null || true)"
 
           if [ -n "$CURRENT_SHA" ]; then
             gh api --method PUT "$API_PATH" \
-              -f message='Atualizar ID público do Blob Store' \
+              -f message='Atualizar configuração criptografada do Blob Store' \
               -f content="$CONTENT" \
               -f branch='dados' \
               -f sha="$CURRENT_SHA" >/dev/null
           else
             gh api --method PUT "$API_PATH" \
-              -f message='Publicar ID público do Blob Store' \
+              -f message='Publicar configuração criptografada do Blob Store' \
               -f content="$CONTENT" \
               -f branch='dados' >/dev/null
           fi
 
-          echo "ID público do Blob Store publicado na branch dados."
+          rm -f /tmp/blob-token.txt /tmp/blob-token.enc
+          echo "Configuração criptografada do Blob Store publicada na branch dados."
