@@ -19,13 +19,13 @@ async function validateAndSaveGithubConfig(event) {
   event.preventDefault();
   const submitButton = event.submitter || $('githubSettingsForm').querySelector('button[type="submit"]');
   const candidate = getGithubFormConfig();
-  setConnectionStatus('Testando o token, o repositório, a branch e a gravação...', 'testing');
+  setConnectionStatus('Comparando com o CHAVEY e testando como a autenticação chega ao GitHub...', 'testing');
   setBusy(submitButton, true, 'Testando...');
 
   try {
     const result = await testGithubConnection(candidate, true);
-    saveConfig(candidate);
-    setConnectionStatus(`Conexão confirmada. Usuário ${result.login}, repositório ${result.repository}, branch ${result.branch}, gravação autorizada.`, 'success');
+    saveConfig({ ...candidate, authMode: result.authMode || 'token', login: result.login || 'aruanmf446-hub' });
+    setConnectionStatus(`Conexão confirmada. Usuário ${result.login}, repositório ${result.repository}, branch ${result.branch}, autenticação ${result.authMode || 'token'}, gravação autorizada.`, 'success');
     showToast('GitHub conectado e gravação confirmada.');
     await loadAdminData();
     window.setTimeout(() => closeModal('githubSettingsModal'), 900);
@@ -47,7 +47,7 @@ function bindEvents() {
   document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => { if (event.target === backdrop) closeModal(backdrop.id); }));
   document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => { activeTab = button.dataset.tab; document.querySelectorAll('[data-tab]').forEach(item => item.classList.toggle('active',item === button)); document.querySelectorAll('.gemba-tab-view').forEach(view => view.classList.toggle('active',view.id === `tab-${activeTab}`)); }));
   $('githubSettingsForm').addEventListener('submit', validateAndSaveGithubConfig);
-  $('clearGithubTokenButton').addEventListener('click', () => { saveConfig({ ...config, token: '' }); $('githubToken').value = ''; setConnectionStatus('Token removido deste navegador.', 'testing'); showToast('Chave removida deste navegador.'); });
+  $('clearGithubTokenButton').addEventListener('click', () => { saveConfig({ ...config, token: '', authMode: '', login: '' }); $('githubToken').value = ''; setConnectionStatus('Token removido deste navegador.', 'testing'); showToast('Chave removida deste navegador.'); });
   $('addTemplateItemButton').addEventListener('click', () => { editingItems.push(defaultItem(editingItems.length)); renderTemplateItems(); });
   $('templateItemList').addEventListener('input', event => { const field = event.target.closest('[data-item-field]'); if (!field) return; const item = editingItems.find(value => value.id === field.dataset.itemId); if (!item) return; item[field.dataset.itemField] = field.dataset.itemField === 'observationRequired' ? field.value === 'true' : field.value; if (field.dataset.itemField === 'title') field.closest('.template-item-card')?.querySelector('.template-item-header strong')?.replaceChildren(document.createTextNode(field.value || 'Item')); });
   $('templateItemList').addEventListener('change', async event => { const imageInput = event.target.closest('[data-model-image]'); if (!imageInput) return; const file = imageInput.files?.[0]; if (!file) return; const item = editingItems.find(value => value.id === imageInput.dataset.modelImage); const compressed = await compressImage(file); item.modelImageData = compressed.dataUrl; renderTemplateItems(); });
